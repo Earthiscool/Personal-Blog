@@ -110,8 +110,10 @@
       <label>Description<br />
         <textarea id="projectDescription" rows="5" required></textarea>
       </label><br />
-      <label>Project Code (HTML/JS)<br />
-        <textarea id="projectCode" rows="8" placeholder="Paste your project HTML/JS code here" required></textarea>
+      <label>Project Code (HTML/JS/Python)<br />
+        <div id="aceEditor" style="width:100%; height:300px; border:1px solid #00cccc; border-radius:6px;"></div>
+        <textarea id="projectCode" name="projectCode" style="display:none;"></textarea>
+
       </label><br />
       <label>Project URL (optional)<br />
         <input type="url" id="projectUrl" placeholder="https://example.com" />
@@ -328,6 +330,9 @@
     projectMessage.textContent = "";
     projectMessage.style.color = "";
 
+    // Sync ace editor content into hidden textarea before submitting
+    document.getElementById("projectCode").value = window.aceEditor.getValue();
+
     const title = document.getElementById("projectTitle").value.trim();
     const category = document.getElementById("projectCategory").value.trim().toLowerCase();
     const description = document.getElementById("projectDescription").value.trim();
@@ -352,11 +357,28 @@
       projectMessage.style.color = "limegreen";
       projectMessage.textContent = "Project added successfully!";
       projectForm.reset();
+      window.aceEditor.setValue("", -1); // clear ace editor after reset
     } catch (err) {
       console.error("Error adding project:", err);
       projectMessage.style.color = "red";
       projectMessage.textContent = "Error adding project: " + err.message;
     }
+  });
+</script>
+
+<!-- Ace Editor CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js" crossorigin="anonymous"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.aceEditor = ace.edit("aceEditor");
+    aceEditor.setTheme("ace/theme/monokai");
+    aceEditor.session.setMode("ace/mode/python");
+    aceEditor.setOptions({
+      fontSize: "14pt",
+      showPrintMargin: false,
+      wrap: true,
+    });
   });
 </script>
 
