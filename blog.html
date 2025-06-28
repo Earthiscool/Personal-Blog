@@ -157,19 +157,24 @@
         postsContainer.appendChild(article);
         loadComments(post.id);
         const form = article.querySelector('form');
+
         form.addEventListener('submit', async e => {
           e.preventDefault();
           const name = form.commenter.value.trim();
           const comment = form.comment.value.trim();
+          const postId = form.dataset.postId;
+
           if (!name || !comment) return;
+
           try {
-            await addDoc(collection(db, "posts", post.id, "comments"), {
+            await addDoc(collection(db, "posts", postId, "comments"), {
               commenter: name,
               comment: comment,
-              createdAt: serverTimestamp()
+              createdAt: serverTimestamp(),
+              approved: false
             });
             form.reset();
-            loadComments(post.id);
+            loadComments(postId);
           } catch (err) {
             alert("Failed to add comment: " + err.message);
           }
@@ -182,7 +187,8 @@
       commentsDiv.innerHTML = '';
       const snap = await getDocs(query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc")));
       snap.forEach(doc => {
-        const { commenter, comment } = doc.data();
+        const { commenter, comment, approved } = doc.data();
+        if (!approved) return;
         const div = document.createElement('div');
         div.className = 'comment';
         div.innerHTML = `<strong>${commenter}</strong>: ${comment}`;
@@ -213,7 +219,6 @@
       });
     }
 
-    // Require login to view blog
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loadPosts();
