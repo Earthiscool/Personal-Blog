@@ -57,6 +57,13 @@
     border-bottom: 1px solid #00ffff;
     padding-bottom: 0.3rem;
   }
+  .comment {
+    border: 1px solid #00cccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #111;
+    border-radius: 8px;
+  }
 </style>
 </head>
 <body>
@@ -114,6 +121,12 @@
     <div id="projectMessage"></div>
   </section>
 
+  <!-- COMMENT MODERATION -->
+  <section id="commentModeration">
+    <h2>Moderate Comments</h2>
+    <div id="commentsContainer"></div>
+  </section>
+
 </div>
 
 <div id="noAccess" style="display:none; color:#f66; margin-top:2rem;">
@@ -135,7 +148,12 @@
     getDoc,
     collection,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    query,
+    where,
+    getDocs,
+    updateDoc,
+    deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -152,22 +170,17 @@
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
-  // DOM elements
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const uidDisplay = document.getElementById("uidDisplay");
   const adminSection = document.getElementById("adminSection");
   const noAccess = document.getElementById("noAccess");
-
-  // Blog form
   const blogForm = document.getElementById("blogForm");
   const message = document.getElementById("message");
-
-  // Project form
   const projectForm = document.getElementById("projectForm");
   const projectMessage = document.getElementById("projectMessage");
+  const commentsContainer = document.getElementById("commentsContainer");
 
-  // Login handler
   loginBtn.onclick = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -178,7 +191,6 @@
     }
   };
 
-  // Logout handler
   logoutBtn.onclick = async () => {
     try {
       await signOut(auth);
@@ -189,7 +201,6 @@
     }
   };
 
-  // Auth state listener
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       loginBtn.style.display = "none";
@@ -204,6 +215,7 @@
         if (userDocSnap.exists() && userDocSnap.data().role === "admin") {
           adminSection.style.display = "block";
           noAccess.style.display = "none";
+          loadUnapprovedComments();
         } else {
           adminSection.style.display = "none";
           noAccess.style.display = "block";
@@ -222,7 +234,63 @@
     }
   });
 
-  // Handle blog post submission
+  async function loadUnapprovedComments() {
+    commentsContainer.innerHTML = ""; // Clear previous comments
+
+    // 1. Get all blog posts
+    const postsSnapshot = await getDocs(collection(db, "posts"));
+
+    for (const postDoc of postsSnapshot.docs) {
+      const postId = postDoc.id;
+      const postData = postDoc.data();
+
+      // 2. Query comments subcollection where approved == false
+      const commentsRef = collection(db, "posts", postId, "comments");
+      const q = query(commentsRef, where("approved", "==", false));
+      const commentsSnapshot = await getDocs(q);
+
+      if (commentsSnapshot.empty) continue; // no unapproved comments in this post
+
+      // Add a header for this post's comments
+      const postHeader = document.createElement("h3");
+      postHeader.textContent = `Comments for post: ${postData.title || postId}`;
+      commentsContainer.appendChild(postHeader);
+
+      commentsSnapshot.forEach(commentDoc => {
+        const commentData = commentDoc.data();
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `
+          <p><strong>Commenter:</strong> ${commentData.commenter || "Unknown"}</p>
+          <p><strong>Comment:</strong> ${commentData.comment || ""}</p>
+          <button onclick="approveComment('${postId}', '${commentDoc.id}')">Approve</button>
+          <button onclick="deleteComment('${postId}', '${commentDoc.id}')">Delete</button>
+        `;
+        commentsContainer.appendChild(div);
+      });
+    }
+  }
+
+  window.approveComment = async function(postId, commentId) {
+    try {
+      await updateDoc(doc(db, "posts", postId, "comments", commentId), { approved: true });
+      loadUnapprovedComments(); // Refresh list after approval
+    } catch (err) {
+      alert("Error approving comment: " + err.message);
+      console.error(err);
+    }
+  };
+
+  window.deleteComment = async function(postId, commentId) {
+    try {
+      await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+      loadUnapprovedComments(); // Refresh list after deletion
+    } catch (err) {
+      alert("Error deleting comment: " + err.message);
+      console.error(err);
+    }
+  };
+
   blogForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     message.textContent = "";
@@ -255,7 +323,6 @@
     }
   });
 
-  // Handle project submission
   projectForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     projectMessage.textContent = "";
@@ -291,7 +358,6 @@
       projectMessage.textContent = "Error adding project: " + err.message;
     }
   });
-
 </script>
 
 </body>
