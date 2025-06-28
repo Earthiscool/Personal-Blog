@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Code Editor – Let Dreamers Dream</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #fff;
+    }
+    nav {
+      background: #222;
+      padding: 1rem;
+      text-align: center;
+    }
+    nav a {
+      color: #00ffff;
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    #tabs {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      background: #222;
+      border: 1px solid #00cccc;
+      margin: 0 0.3rem;
+      border-radius: 4px;
+    }
+    .tab.active {
+      background: #00cccc;
+      color: #000;
+    }
+    #editorSection {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    textarea {
+      width: 90%;
+      height: 300px;
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 1rem;
+      border: 2px solid #00cccc;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      padding: 0.5rem 1.2rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00cccc;
+    }
+    iframe, pre {
+      width: 90%;
+      height: 300px;
+      margin-top: 1rem;
+      border: 2px solid #00cccc;
+      background: #fff;
+      color: #000;
+    }
+    pre {
+      background: #000;
+      color: #0f0;
+      overflow: auto;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Projects</a>
+  <a href="blog.html">Blog</a>
+  <a href="contact.html">Contact</a>
+  <a href="editor.html">Editor</a>
+</nav>
+
+<div id="tabs">
+  <div class="tab active" data-tab="html">HTML/CSS/JS</div>
+  <div class="tab" data-tab="python">Python</div>
+</div>
+
+<section id="editorSection">
+  <textarea id="htmlEditor" placeholder="Write HTML, CSS, or JS code here..."></textarea>
+  <textarea id="pythonEditor" placeholder="Write Python code here..." style="display:none;"></textarea>
+
+  <div>
+    <button onclick="runCode()">Run</button>
+    <button onclick="downloadCode()">Download</button>
+    <button onclick="openNew()">Open in New Window</button>
+  </div>
+
+  <iframe id="preview" style="display: block;"></iframe>
+  <pre id="pythonOutput" style="display: none;"></pre>
+</section>
+
+<script>
+  const htmlEditor = document.getElementById("htmlEditor");
+  const pythonEditor = document.getElementById("pythonEditor");
+  const preview = document.getElementById("preview");
+  const output = document.getElementById("pythonOutput");
+
+  function runCode() {
+    const activeTab = document.querySelector(".tab.active").dataset.tab;
+    if (activeTab === "html") {
+      const blob = new Blob([htmlEditor.value], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      preview.src = url;
+      preview.style.display = "block";
+      output.style.display = "none";
+    } else {
+      fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: "python",
+          source: pythonEditor.value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        output.textContent = data.output || "No output";
+        preview.style.display = "none";
+        output.style.display = "block";
+      })
+      .catch(err => {
+        output.textContent = "Error: " + err.message;
+      });
+    }
+  }
+
+  function downloadCode() {
+    const activeTab = document.querySelector(".tab.active").dataset.tab;
+    const code = activeTab === "html" ? htmlEditor.value : pythonEditor.value;
+    const blob = new Blob([code], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = activeTab === "html" ? "project.html" : "script.py";
+    a.click();
+  }
+
+  function openNew() {
+    const code = htmlEditor.value;
+    const newWin = window.open();
+    newWin.document.open();
+    newWin.document.write(code);
+    newWin.document.close();
+  }
+
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      if (tab.dataset.tab === "html") {
+        htmlEditor.style.display = "block";
+        pythonEditor.style.display = "none";
+        preview.style.display = "block";
+        output.style.display = "none";
+      } else {
+        htmlEditor.style.display = "none";
+        pythonEditor.style.display = "block";
+        preview.style.display = "none";
+        output.style.display = "block";
+      }
+    });
+  });
+</script>
+</body>
+</html>

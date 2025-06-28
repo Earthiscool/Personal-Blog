@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Let Dreamers Dream – Blog</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0; padding: 2rem;
+    }
+    body.light-mode {
+      background: #f7f7f7;
+      color: #222;
+    }
+    h1, h2 {
+      color: #00ffff;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    nav {
+      background-color: #222;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    nav a {
+      margin: 0 1rem;
+      color: #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .blog-post {
+      border-bottom: 1px solid #444;
+      padding-bottom: 2rem;
+      margin-bottom: 2rem;
+    }
+    .comment {
+      padding: 0.3rem;
+      border-radius: 4px;
+      background: #222;
+      margin-bottom: 0.5rem;
+    }
+    .comment strong {
+      color: #00ffff;
+    }
+    input, textarea, button {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #00cccc;
+    }
+    .comments-section {
+      margin-top: 1rem;
+    }
+    #searchBar {
+      max-width: 300px;
+      margin: 0 auto 2rem;
+      display: block;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Let Dreamers Dream</h1>
+    <p>Where imagination meets code</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+
+  <input type="search" id="searchBar" placeholder="Search blog posts..." aria-label="Search blog posts" />
+  <div id="postsContainer"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithPopup,
+      GoogleAuthProvider
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.appspot.com",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const postsContainer = document.getElementById("postsContainer");
+    const searchBar = document.getElementById("searchBar");
+
+    function renderPosts(posts) {
+      postsContainer.innerHTML = '';
+      posts.forEach(post => {
+        const article = document.createElement('article');
+        article.className = 'blog-post';
+        article.innerHTML = `
+          <h3>${post.title}</h3>
+          <p>${post.content}</p>
+          <div class="comments-section">
+            <h4>Comments</h4>
+            <div id="comments-${post.id}"></div>
+            <form data-post-id="${post.id}">
+              <input type="text" name="commenter" placeholder="Your Name" required />
+              <textarea name="comment" rows="3" placeholder="Your comment..." required></textarea>
+              <button type="submit">Add Comment</button>
+            </form>
+          </div>
+        `;
+        postsContainer.appendChild(article);
+        loadComments(post.id);
+        const form = article.querySelector('form');
+        form.addEventListener('submit', async e => {
+          e.preventDefault();
+          const name = form.commenter.value.trim();
+          const comment = form.comment.value.trim();
+          if (!name || !comment) return;
+          try {
+            await addDoc(collection(db, "posts", post.id, "comments"), {
+              commenter: name,
+              comment: comment,
+              createdAt: serverTimestamp()
+            });
+            form.reset();
+            loadComments(post.id);
+          } catch (err) {
+            alert("Failed to add comment: " + err.message);
+          }
+        });
+      });
+    }
+
+    async function loadComments(postId) {
+      const commentsDiv = document.getElementById(`comments-${postId}`);
+      commentsDiv.innerHTML = '';
+      const snap = await getDocs(query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc")));
+      snap.forEach(doc => {
+        const { commenter, comment } = doc.data();
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML = `<strong>${commenter}</strong>: ${comment}`;
+        commentsDiv.appendChild(div);
+      });
+    }
+
+    async function loadPosts() {
+      postsContainer.innerHTML = '';
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      const posts = [];
+
+      snapshot.forEach(docSnap => {
+        posts.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      renderPosts(posts);
+
+      searchBar.addEventListener("input", () => {
+        const term = searchBar.value.toLowerCase();
+        const filtered = posts.filter(p =>
+          p.title.toLowerCase().includes(term) ||
+          p.content.toLowerCase().includes(term) ||
+          p.category?.toLowerCase().includes(term)
+        );
+        renderPosts(filtered);
+      });
+    }
+
+    // Require login to view blog
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadPosts();
+      } else {
+        alert("Please sign in to view the blog.");
+        signInWithPopup(auth, provider).catch(console.error);
+      }
+    });
+  </script>
+</body>
+</html>

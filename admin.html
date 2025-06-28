@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin Dashboard - Let Dreamers Dream</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
+    color: #fff;
+    margin: 0; padding: 2rem;
+    min-height: 100vh;
+  }
+  #uidDisplay {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #00ffff;
+    color: black;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 9999;
+  }
+  button, input, textarea {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+  }
+  input, textarea {
+    width: 100%;
+    max-width: 400px;
+  }
+  button {
+    cursor: pointer;
+    background: #00ffff;
+    color: black;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #00cccc;
+  }
+  form {
+    max-width: 500px;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+  }
+  #message, #projectMessage {
+    margin-top: 0.5rem;
+    font-weight: bold;
+  }
+  h2 {
+    border-bottom: 1px solid #00ffff;
+    padding-bottom: 0.3rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<div id="authSection">
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Sign Out</button>
+</div>
+
+<div id="uidDisplay" style="display:none;"></div>
+
+<div id="adminSection" style="display:none;">
+
+  <!-- BLOG POST FORM -->
+  <section id="blogSection">
+    <h2>Add New Blog Post</h2>
+    <form id="blogForm">
+      <label>Title<br />
+        <input type="text" id="title" required />
+      </label><br />
+      <label>Category<br />
+        <input type="text" id="category" required placeholder="e.g. javascript, html, thoughts" />
+      </label><br />
+      <label>Content (HTML allowed)<br />
+        <textarea id="content" rows="6" required></textarea>
+      </label><br />
+      <button type="submit">Add Blog Post</button>
+    </form>
+    <div id="message"></div>
+  </section>
+
+  <!-- PROJECT FORM -->
+  <section id="projectSection">
+    <h2>Add New Coding Project</h2>
+    <form id="projectForm">
+      <label>Project Title<br />
+        <input type="text" id="projectTitle" required />
+      </label><br />
+      <label>Category<br />
+        <input type="text" id="projectCategory" required placeholder="e.g. JavaScript, Python, Web" />
+      </label><br />
+      <label>Description<br />
+        <textarea id="projectDescription" rows="5" required></textarea>
+      </label><br />
+      <label>Project Code (HTML/JS)<br />
+        <textarea id="projectCode" rows="8" placeholder="Paste your project HTML/JS code here" required></textarea>
+      </label><br />
+      <label>Project URL (optional)<br />
+        <input type="url" id="projectUrl" placeholder="https://example.com" />
+      </label><br />
+      <button type="submit">Add Project</button>
+    </form>
+    <div id="projectMessage"></div>
+  </section>
+
+</div>
+
+<div id="noAccess" style="display:none; color:#f66; margin-top:2rem;">
+  Access denied. You are not an admin.
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+    authDomain: "letdreamersdream.firebaseapp.com",
+    projectId: "letdreamersdream",
+    storageBucket: "letdreamersdream.appspot.com",
+    messagingSenderId: "769338292042",
+    appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  // DOM elements
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const uidDisplay = document.getElementById("uidDisplay");
+  const adminSection = document.getElementById("adminSection");
+  const noAccess = document.getElementById("noAccess");
+
+  // Blog form
+  const blogForm = document.getElementById("blogForm");
+  const message = document.getElementById("message");
+
+  // Project form
+  const projectForm = document.getElementById("projectForm");
+  const projectMessage = document.getElementById("projectMessage");
+
+  // Login handler
+  loginBtn.onclick = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Signed in as:", result.user.uid);
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      alert("Sign-in failed: " + error.message);
+    }
+  };
+
+  // Logout handler
+  logoutBtn.onclick = async () => {
+    try {
+      await signOut(auth);
+      console.log("Signed out");
+    } catch (error) {
+      console.error("Sign-out error:", error);
+      alert("Sign-out failed: " + error.message);
+    }
+  };
+
+  // Auth state listener
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      uidDisplay.style.display = "block";
+      uidDisplay.textContent = `Your UID: ${user.uid}`;
+
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists() && userDocSnap.data().role === "admin") {
+          adminSection.style.display = "block";
+          noAccess.style.display = "none";
+        } else {
+          adminSection.style.display = "none";
+          noAccess.style.display = "block";
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        adminSection.style.display = "none";
+        noAccess.style.display = "block";
+      }
+    } else {
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      uidDisplay.style.display = "none";
+      adminSection.style.display = "none";
+      noAccess.style.display = "none";
+    }
+  });
+
+  // Handle blog post submission
+  blogForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    message.textContent = "";
+    message.style.color = "";
+
+    const title = document.getElementById("title").value.trim();
+    const category = document.getElementById("category").value.trim().toLowerCase();
+    const content = document.getElementById("content").value.trim();
+
+    if (!title || !category || !content) {
+      message.style.color = "red";
+      message.textContent = "Please fill in all fields.";
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "posts"), {
+        title,
+        category,
+        content,
+        createdAt: serverTimestamp()
+      });
+      message.style.color = "limegreen";
+      message.textContent = "Blog post added successfully!";
+      blogForm.reset();
+    } catch (err) {
+      console.error("Error adding blog post:", err);
+      message.style.color = "red";
+      message.textContent = "Error adding blog post: " + err.message;
+    }
+  });
+
+  // Handle project submission
+  projectForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    projectMessage.textContent = "";
+    projectMessage.style.color = "";
+
+    const title = document.getElementById("projectTitle").value.trim();
+    const category = document.getElementById("projectCategory").value.trim().toLowerCase();
+    const description = document.getElementById("projectDescription").value.trim();
+    const code = document.getElementById("projectCode").value.trim();
+    const url = document.getElementById("projectUrl").value.trim();
+
+    if (!title || !category || !description || !code) {
+      projectMessage.style.color = "red";
+      projectMessage.textContent = "Please fill in all required fields including project code.";
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "projects"), {
+        title,
+        category,
+        description,
+        code,
+        url: url || null,
+        createdAt: serverTimestamp()
+      });
+      projectMessage.style.color = "limegreen";
+      projectMessage.textContent = "Project added successfully!";
+      projectForm.reset();
+    } catch (err) {
+      console.error("Error adding project:", err);
+      projectMessage.style.color = "red";
+      projectMessage.textContent = "Error adding project: " + err.message;
+    }
+  });
+
+</script>
+
+</body>
+</html>

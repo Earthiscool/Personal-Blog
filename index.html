@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Projects - Let Dreamers Dream</title>
+<nav style="background:#111; padding:1rem; text-align:center; border-bottom:2px solid #00ffff; margin-bottom:2rem;">
+  <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
+  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+</nav>
+
+<!-- Firebase Compat SDK for Auth only -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
+<script>
+  // Initialize Firebase app for Auth only
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+    authDomain: "letdreamersdream.firebaseapp.com",
+    projectId: "letdreamersdream",
+    storageBucket: "letdreamersdream.appspot.com",
+    messagingSenderId: "769338292042",
+    appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+
+  // Redirect to login if not logged in
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = 'login.html';
+    }
+  });
+</script>
+
+<button id="logoutBtn">Logout</button>
+
+<script>
+  // Logout button handler
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    auth.signOut().then(() => {
+      window.location.href = 'login.html';
+    }).catch(err => {
+      console.error('Logout failed:', err);
+      alert('Logout failed, check console.');
+    });
+  });
+</script>
+
+<style>
+  body {
+    background: #111;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0; padding: 2rem;
+  }
+  h1 {
+    color: #00ffff;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .project {
+    border: 1px solid #00ffff;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    background: #222;
+  }
+  .project h3 {
+    margin-top: 0;
+  }
+  button {
+    background: #00ffff;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #00cccc;
+  }
+  .projectOutput {
+    margin-top: 1rem;
+    border: 1px solid #00cccc;
+    background: #111;
+    padding: 0.5rem;
+    height: 300px;
+  }
+  a.projectUrl {
+    color: #00ffff;
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 1rem;
+  }
+  a.projectUrl:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h1>Let Dreamers Dream - Coding Projects</h1>
+
+<div id="projectsContainer"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+    authDomain: "letdreamersdream.firebaseapp.com",
+    projectId: "letdreamersdream",
+    storageBucket: "letdreamersdream.appspot.com",
+    messagingSenderId: "769338292042",
+    appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const projectsContainer = document.getElementById('projectsContainer');
+
+  async function loadProjects() {
+    const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      const projectDiv = document.createElement('div');
+      projectDiv.className = 'project';
+
+      let urlLink = '';
+      if (data.url) {
+        urlLink = `<a href="${data.url}" target="_blank" rel="noopener noreferrer" class="projectUrl">Open Project URL</a>`;
+      }
+
+      projectDiv.innerHTML = `
+        <h3>${data.title}</h3>
+        <p><strong>Category:</strong> ${data.category}</p>
+        <p>${data.description}</p>
+        <button class="runBtn">Run</button>
+        <button class="openBtn">Open in New Window</button>
+        ${urlLink}
+        <div class="projectOutput"></div>
+      `;
+
+      projectsContainer.appendChild(projectDiv);
+
+      const runBtn = projectDiv.querySelector('.runBtn');
+      const openBtn = projectDiv.querySelector('.openBtn');
+      const outputDiv = projectDiv.querySelector('.projectOutput');
+
+      runBtn.onclick = () => {
+        outputDiv.innerHTML = `<iframe sandbox="allow-scripts" style="width:100%; height:100%; border:none;"></iframe>`;
+        const iframe = outputDiv.querySelector('iframe');
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(data.code);
+        iframe.contentDocument.close();
+      };
+
+      openBtn.onclick = () => {
+        const newWindow = window.open();
+        newWindow.document.write(data.code);
+        newWindow.document.close();
+      };
+    });
+  }
+
+  loadProjects();
+</script>
+
+</body>
+</html>
