@@ -43,14 +43,6 @@
       background: #00bcd4;
       color: #000;
     }
-    #googleSignInBtn {
-      background: #4285F4;
-      color: white;
-    }
-    #googleSignUpBtn {
-      background: #34A853; /* Google green */
-      color: white;
-    }
     #toggle {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -69,6 +61,26 @@
       color: #4caf50;
       min-height: 1.2em;
     }
+
+    /* Hidden Google Button */
+    #hiddenGoogleSignIn {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: #4285F4;
+      color: white;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999;
+      border: none;
+    }
+    #hiddenGoogleSignIn:hover {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -78,12 +90,13 @@
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
     <button id="submitBtn" onclick="handleAuth()">Login</button>
-    <button id="googleSignInBtn">Sign in with Google</button>
-    <button id="googleSignUpBtn">Sign up with Google</button>
     <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
     <p id="error"></p>
     <p id="info"></p>
   </div>
+
+  <!-- Hidden Google Sign-In Button -->
+  <button id="hiddenGoogleSignIn">Sign in with Google</button>
 
   <!-- Firebase Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -157,30 +170,9 @@
       }
     }
 
-    // Google Sign-In handler
-    const googleSignInBtn = document.getElementById('googleSignInBtn');
-    googleSignInBtn.addEventListener('click', async () => {
-      try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (!userDoc.exists) {
-          await db.collection('users').doc(user.uid).set({
-            name: user.displayName || "New User",
-            bio: "This is your new profile. Update it anytime.",
-            photoURL: user.photoURL || ""
-          });
-        }
-        window.location.href = 'index.html';
-      } catch (error) {
-        document.getElementById('error').textContent = error.message;
-      }
-    });
-
-    // Google Sign-Up handler
-    const googleSignUpBtn = document.getElementById('googleSignUpBtn');
-    googleSignUpBtn.addEventListener('click', async () => {
+    // Hidden Google Sign-In
+    const hiddenBtn = document.getElementById('hiddenGoogleSignIn');
+    hiddenBtn.addEventListener('click', async () => {
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await auth.signInWithPopup(provider);
