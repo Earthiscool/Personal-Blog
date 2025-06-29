@@ -96,6 +96,7 @@
   <a href="blog.html">Blog</a>
   <a href="contact.html">Contact</a>
   <a href="editor.html">Editor</a>
+  <a href="course.html">Course</a>
 </nav>
 
 <div id="tabs">
@@ -124,33 +125,43 @@
   const output = document.getElementById("pythonOutput");
 
   function runCode() {
-    const activeTab = document.querySelector(".tab.active").dataset.tab;
-    if (activeTab === "html") {
-      const blob = new Blob([htmlEditor.value], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      preview.src = url;
-      preview.style.display = "block";
-      output.style.display = "none";
-    } else {
-      fetch("https://emkc.org/api/v2/piston/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language: "python",
-          source: pythonEditor.value
-        })
+  const activeTab = document.querySelector(".tab.active").dataset.tab;
+  if (activeTab === "html") {
+    const blob = new Blob([htmlEditor.value], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    preview.src = url;
+    preview.style.display = "block";
+    output.style.display = "none";
+  } else {
+    fetch("https://emkc.org/api/v2/piston/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        language: "python",
+        version: "3.10.0",
+        files: [{ name: "main.py", content: pythonEditor.value }]
       })
-      .then(res => res.json())
-      .then(data => {
-        output.textContent = data.output || "No output";
-        preview.style.display = "none";
-        output.style.display = "block";
-      })
-      .catch(err => {
-        output.textContent = "Error: " + err.message;
-      });
-    }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.run) {
+        output.textContent = data.run.output || data.run.stderr || "No output.";
+      } else if (data.message) {
+        output.textContent = "Error: " + data.message;
+      } else {
+        output.textContent = "Unexpected error. Please try again.";
+      }
+      preview.style.display = "none";
+      output.style.display = "block";
+    })
+    .catch(err => {
+      output.textContent = "Network error: " + err.message;
+      preview.style.display = "none";
+      output.style.display = "block";
+    });
   }
+}
+
 
   function downloadCode() {
     const activeTab = document.querySelector(".tab.active").dataset.tab;
