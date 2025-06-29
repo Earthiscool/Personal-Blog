@@ -60,6 +60,12 @@
       color: #4caf50;
       min-height: 1.2em;
     }
+    #googleSignInBtn {
+      background: #4285F4;
+      color: white;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -69,6 +75,7 @@
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
     <button id="submitBtn" onclick="handleAuth()">Login</button>
+    <button id="googleSignInBtn">Sign in with Google</button>
     <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
     <p id="error"></p>
     <p id="info"></p>
@@ -152,6 +159,30 @@
         errorEl.textContent = err.message;
       }
     }
+
+    // Google Sign-In handler
+    const googleSignInBtn = document.getElementById('googleSignInBtn');
+    googleSignInBtn.addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(async (result) => {
+          const user = result.user;
+          // Check if user exists in Firestore, if not, create profile doc
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          if (!userDoc.exists) {
+            await db.collection('users').doc(user.uid).set({
+              name: user.displayName || "New User",
+              bio: "This is your new profile. Update it anytime.",
+              photoURL: user.photoURL || ""
+            });
+          }
+          // Redirect after login
+          window.location.href = 'index.html';
+        })
+        .catch((error) => {
+          document.getElementById('error').textContent = error.message;
+        });
+    });
   </script>
 </body>
 </html>
