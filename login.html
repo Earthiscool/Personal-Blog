@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login / Signup – Let Dreamers Dream</title>
   <style>
-    /* Your existing styles here */
     body {
       background: #111;
       color: #fff;
@@ -33,14 +32,24 @@
     button {
       width: 100%;
       padding: 0.6rem;
-      background: #00bcd4;
       border: none;
       margin-top: 0.5rem;
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
       font-size: 1.1rem;
+    }
+    #submitBtn {
+      background: #00bcd4;
       color: #000;
+    }
+    #googleSignInBtn {
+      background: #4285F4;
+      color: white;
+    }
+    #googleSignUpBtn {
+      background: #34A853; /* Google green */
+      color: white;
     }
     #toggle {
       margin-top: 1rem;
@@ -60,12 +69,6 @@
       color: #4caf50;
       min-height: 1.2em;
     }
-    #googleSignInBtn {
-      background: #4285F4;
-      color: white;
-      font-weight: bold;
-      margin-top: 1rem;
-    }
   </style>
 </head>
 <body>
@@ -76,6 +79,7 @@
     <input type="password" id="password" placeholder="Password" />
     <button id="submitBtn" onclick="handleAuth()">Login</button>
     <button id="googleSignInBtn">Sign in with Google</button>
+    <button id="googleSignUpBtn">Sign up with Google</button>
     <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
     <p id="error"></p>
     <p id="info"></p>
@@ -129,30 +133,23 @@
 
       try {
         if (isSignup) {
-          // Sign up flow
           const result = await auth.createUserWithEmailAndPassword(email, password);
-          // Send verification email
           await result.user.sendEmailVerification();
-          // Create Firestore profile doc
           await db.collection('users').doc(result.user.uid).set({
             name,
             bio: "This is your new profile. Update it anytime.",
             photoURL: ""
           });
           await result.user.updateProfile({ displayName: name });
-
           infoEl.textContent = 'Verification email sent! Please check your inbox before logging in.';
-          // Optionally, log out user so they must verify email first
           await auth.signOut();
         } else {
-          // Login flow
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
           if (!userCredential.user.emailVerified) {
             errorEl.textContent = 'Email not verified. Please check your inbox.';
             await auth.signOut();
             return;
           }
-          // Email verified, proceed
           window.location.href = 'index.html';
         }
       } catch (err) {
@@ -162,26 +159,44 @@
 
     // Google Sign-In handler
     const googleSignInBtn = document.getElementById('googleSignInBtn');
-    googleSignInBtn.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then(async (result) => {
-          const user = result.user;
-          // Check if user exists in Firestore, if not, create profile doc
-          const userDoc = await db.collection('users').doc(user.uid).get();
-          if (!userDoc.exists) {
-            await db.collection('users').doc(user.uid).set({
-              name: user.displayName || "New User",
-              bio: "This is your new profile. Update it anytime.",
-              photoURL: user.photoURL || ""
-            });
-          }
-          // Redirect after login
-          window.location.href = 'index.html';
-        })
-        .catch((error) => {
-          document.getElementById('error').textContent = error.message;
-        });
+    googleSignInBtn.addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          await db.collection('users').doc(user.uid).set({
+            name: user.displayName || "New User",
+            bio: "This is your new profile. Update it anytime.",
+            photoURL: user.photoURL || ""
+          });
+        }
+        window.location.href = 'index.html';
+      } catch (error) {
+        document.getElementById('error').textContent = error.message;
+      }
+    });
+
+    // Google Sign-Up handler
+    const googleSignUpBtn = document.getElementById('googleSignUpBtn');
+    googleSignUpBtn.addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          await db.collection('users').doc(user.uid).set({
+            name: user.displayName || "New User",
+            bio: "This is your new profile. Update it anytime.",
+            photoURL: user.photoURL || ""
+          });
+        }
+        window.location.href = 'index.html';
+      } catch (error) {
+        document.getElementById('error').textContent = error.message;
+      }
     });
   </script>
 </body>
