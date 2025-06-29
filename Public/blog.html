@@ -103,6 +103,13 @@
   <div id="postsContainer"></div>
 
   <script type="module">
+    fetch('/api/key')
+  .then(res => res.json())
+  .then(data => {
+    console.log("Safe Google API Key:", data.key);
+    // use data.key in a map, etc.
+  });
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import {
       getFirestore,

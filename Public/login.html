@@ -73,6 +73,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
   <script>
+    fetch('/api/key')
+  .then(res => res.json())
+  .then(data => {
+    console.log("Safe Google API Key:", data.key);
+    // use data.key in a map, etc.
+  });
+
     const firebaseConfig = {
       apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
       authDomain: "letdreamersdream.firebaseapp.com",
