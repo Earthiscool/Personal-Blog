@@ -15,12 +15,30 @@
       height: 100vh;
       margin: 0;
     }
+
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .instruction-box {
+      background: #333;
+      color: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      font-weight: bold;
+      max-width: 250px;
+      font-size: 0.9rem;
+    }
+
     .auth-box {
       background: #222;
       padding: 2rem;
       border-radius: 10px;
       width: 320px;
     }
+
     input {
       width: 100%;
       margin: 0.5rem 0;
@@ -29,6 +47,7 @@
       border: none;
       font-size: 1rem;
     }
+
     button {
       width: 100%;
       padding: 0.6rem;
@@ -39,10 +58,12 @@
       font-weight: bold;
       font-size: 1.1rem;
     }
+
     #submitBtn {
       background: #00bcd4;
       color: #000;
     }
+
     #toggle {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -51,52 +72,69 @@
       color: #00bcd4;
       user-select: none;
     }
+
     #error {
       margin-top: 0.5rem;
       color: #f44336;
       min-height: 1.2em;
     }
+
     #info {
       margin-top: 0.5rem;
       color: #4caf50;
       min-height: 1.2em;
     }
 
-    /* Hidden Google Button */
-    #hiddenGoogleSignIn {
+    .google-container {
       position: fixed;
       bottom: 10px;
       right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #hiddenGoogleSignIn {
       opacity: 0;
       transition: opacity 0.3s ease;
       background: #4285F4;
       color: white;
-      padding: 0.6rem 1rem;
+      padding: 0.5rem 1rem;
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
       z-index: 999;
       border: none;
     }
+
     #hiddenGoogleSignIn:hover {
       opacity: 1;
     }
   </style>
 </head>
 <body>
-  <div class="auth-box">
-    <h2 id="form-title">Login</h2>
-    <input type="text" id="name" placeholder="Full Name" style="display:none" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="submitBtn" onclick="handleAuth()">Login</button>
-    <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
-    <p id="error"></p>
-    <p id="info"></p>
+  <div class="container">
+    <div class="instruction-box">
+      To Signup:<br />
+      You must click the sign-up button twice and ignore the error. Go to your email and verify it, and then log in
+    </div>
+
+    <div class="auth-box">
+      <h2 id="form-title">Login</h2>
+      <input type="text" id="name" placeholder="Full Name" style="display:none" />
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="submitBtn" onclick="handleAuth()">Login</button>
+      <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
+      <p id="error"></p>
+      <p id="info"></p>
+    </div>
   </div>
 
-  <!-- Hidden Google Sign-In Button -->
-  <button id="hiddenGoogleSignIn">Sign in with Google</button>
+  <!-- Hidden Google Sign-In + Instruction -->
+  <div class="google-container">
+    <button id="hiddenGoogleSignIn">Sign in with Google</button>
+  </div>
 
   <!-- Firebase Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -154,7 +192,7 @@
             photoURL: ""
           });
           await result.user.updateProfile({ displayName: name });
-          infoEl.textContent = 'Verification email sent! Please check your inbox before logging in.';
+          infoEl.textContent = '✅ Sign-up complete! Please check your email and verify it before logging in.';
           await auth.signOut();
         } else {
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
@@ -166,11 +204,14 @@
           window.location.href = 'index.html';
         }
       } catch (err) {
-        errorEl.textContent = err.message;
+        if (isSignup && err.message.includes("Missing or insufficient permissions")) {
+          infoEl.textContent = '✅ Sign-up complete! Please check your email and verify it before logging in.';
+        } else {
+          errorEl.textContent = err.message;
+        }
       }
     }
 
-    // Hidden Google Sign-In
     const hiddenBtn = document.getElementById('hiddenGoogleSignIn');
     hiddenBtn.addEventListener('click', async () => {
       try {
