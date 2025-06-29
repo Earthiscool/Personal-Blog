@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Let Dreamers Dream – Contact (With Auth)</title>
@@ -264,15 +266,9 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
 <script>
-  fetch('/api/key')
-  .then(res => res.json())
-  .then(data => {
-    console.log("Safe Google API Key:", data.key);
-    // use data.key in a map, etc.
-  });
-
   // Your Firebase configuration (replace with your actual config)
   const firebaseConfig = {
     apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
@@ -287,6 +283,7 @@
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.firestore();
 
   const authContainer = document.getElementById('authContainer');
   const contactContent = document.getElementById('contactContent');
@@ -343,13 +340,13 @@
   // Listen for auth state changes
   auth.onAuthStateChanged(user => {
     if (user) {
-      // Logged in: show contactContent, hide auth UI
       authContainer.style.display = 'none';
       contactContent.style.display = 'block';
+      console.log('User logged in:', user.email);
     } else {
-      // Logged out: show auth UI, hide contactContent
       authContainer.style.display = 'block';
       contactContent.style.display = 'none';
+      console.log('User logged out');
     }
   });
 
@@ -406,30 +403,109 @@
     }
   });
 
-  // Newsletter form handler (from your original)
+  // -- LocalStorage helpers for subscriber emails --
+  function getLocalSubscribers() {
+    try {
+      const stored = localStorage.getItem('subscribers');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      localStorage.removeItem('subscribers');
+      return [];
+    }
+  }
+
+  function saveLocalSubscribers(subscribers) {
+    localStorage.setItem('subscribers', JSON.stringify(subscribers));
+  }
+
+  function isEmailInLocalSubscribers(email) {
+    const subs = getLocalSubscribers();
+    return subs.includes(email);
+  }
+
+  function addEmailToLocalSubscribers(email) {
+    const subs = getLocalSubscribers();
+    if (!subs.includes(email)) {
+      subs.push(email);
+      saveLocalSubscribers(subs);
+      return true;
+    }
+    return false;
+  }
+
+  // Newsletter form handler with Firestore and localStorage duplicate checks
   const newsletterForm = document.getElementById('newsletterForm');
   const newsletterMsg = document.getElementById('newsletterMsg');
 
-  newsletterForm.addEventListener('submit', e => {
+  newsletterForm.addEventListener('submit', async e => {
     e.preventDefault();
     const emailInput = document.getElementById('newsletterEmail');
-    const email = emailInput.value.trim();
-    if(!email) {
+    const email = emailInput.value.trim().toLowerCase();
+
+    if (!email) {
       newsletterMsg.textContent = 'Please enter a valid email.';
+      newsletterMsg.style.color = 'red';
       return;
     }
-    let emails = JSON.parse(localStorage.getItem('newsletterEmails') || '[]');
-    if(emails.includes(email.toLowerCase())) {
-      newsletterMsg.textContent = 'You are already subscribed!';
+
+    if (!auth.currentUser) {
+      newsletterMsg.textContent = 'You must be signed in to subscribe.';
+      newsletterMsg.style.color = 'red';
+      return;
+    }
+
+    if (isEmailInLocalSubscribers(email)) {
+      newsletterMsg.textContent = 'You are already subscribed (local)!';
+      newsletterMsg.style.color = 'orange';
+      return;
+    }
+
+    try {
+      console.log('Checking Firestore for subscriber:', email);
+      const subscribersRef = db.collection("subscribers");
+      const querySnapshot = await subscribersRef.where("email", "==", email).get();
+
+      if (!querySnapshot.empty) {
+        addEmailToLocalSubscribers(email);
+        newsletterMsg.textContent = 'You are already subscribed (Firestore)!';
+        newsletterMsg.style.color = 'orange';
+        console.log('Subscriber already exists in Firestore:', email);
+      } else {
+        await subscribersRef.add({
+          email: email,
+          subscribedAt: new Date(),
+          uid: auth.currentUser.uid
+        });
+        addEmailToLocalSubscribers(email);
+        newsletterMsg.textContent = 'Thank you for subscribing!';
+        newsletterMsg.style.color = 'limegreen';
+        console.log('Subscriber added:', email);
+      }
+
       emailInput.value = '';
-      return;
+    } catch (error) {
+      console.error('Error subscribing:', error);
+      newsletterMsg.textContent = `Error: ${error.message}`;
+      newsletterMsg.style.color = 'red';
+      alert('Firestore write failed: ' + error.message);
     }
-    emails.push(email.toLowerCase());
-    localStorage.setItem('newsletterEmails', JSON.stringify(emails));
-    newsletterMsg.textContent = 'Thank you for subscribing!';
-    emailInput.value = '';
   });
 
+  // Test Firestore write to verify config & rules
+  async function testFirestoreWrite() {
+    try {
+      const testRef = db.collection("testCollection").doc("testDoc");
+      await testRef.set({ testField: "Hello Firestore!", timestamp: new Date() });
+      console.log("Test write successful");
+    } catch (err) {
+      console.error("Test write failed:", err);
+      alert("Test Firestore write failed: " + err.message);
+    }
+  }
+  // Run test write once on load to confirm setup
+  window.onload = () => {
+    testFirestoreWrite();
+  };
 </script>
 
 </body>

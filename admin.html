@@ -113,7 +113,6 @@
       <label>Project Code (HTML/JS/Python)<br />
         <div id="aceEditor" style="width:100%; height:300px; border:1px solid #00cccc; border-radius:6px;"></div>
         <textarea id="projectCode" name="projectCode" style="display:none;"></textarea>
-
       </label><br />
       <label>Project URL (optional)<br />
         <input type="url" id="projectUrl" placeholder="https://example.com" />
@@ -131,18 +130,30 @@
 
 </div>
 
+<!-- SUBSCRIBER LIST SECTION -->
+<section id="subscriberSection" style="display:none;">
+  <h2>Newsletter Subscribers</h2>
+  <ul id="subscriberList" style="list-style:none; padding-left:0;"></ul>
+</section>
+
 <div id="noAccess" style="display:none; color:#f66; margin-top:2rem;">
   Access denied. You are not an admin.
 </div>
 
+<!-- Ace Editor CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js" crossorigin="anonymous"></script>
+
+<!-- All Firebase & App code consolidated inside one module script -->
 <script type="module">
+  // Safe API Key fetch (optional)
   fetch('/api/key')
   .then(res => res.json())
   .then(data => {
     console.log("Safe Google API Key:", data.key);
-    // use data.key in a map, etc.
+    // You can use data.key here if needed
   });
 
+  // Firebase imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import {
     getAuth,
@@ -165,6 +176,7 @@
     deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+  // Firebase config and initialization
   const firebaseConfig = {
     apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
     authDomain: "letdreamersdream.firebaseapp.com",
@@ -173,12 +185,12 @@
     messagingSenderId: "769338292042",
     appId: "1:769338292042:web:d12a229145acb0e575f3b3"
   };
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
+  // DOM elements
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const uidDisplay = document.getElementById("uidDisplay");
@@ -189,7 +201,9 @@
   const projectForm = document.getElementById("projectForm");
   const projectMessage = document.getElementById("projectMessage");
   const commentsContainer = document.getElementById("commentsContainer");
+  const subscriberSection = document.getElementById("subscriberSection");
 
+  // Login handler
   loginBtn.onclick = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -200,6 +214,7 @@
     }
   };
 
+  // Logout handler
   logoutBtn.onclick = async () => {
     try {
       await signOut(auth);
@@ -210,6 +225,7 @@
     }
   };
 
+  // Auth state listener
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       loginBtn.style.display = "none";
@@ -224,15 +240,19 @@
         if (userDocSnap.exists() && userDocSnap.data().role === "admin") {
           adminSection.style.display = "block";
           noAccess.style.display = "none";
-          loadUnapprovedComments();
+          subscriberSection.style.display = "block";
+          await loadUnapprovedComments();
+          await loadSubscribers();
         } else {
           adminSection.style.display = "none";
           noAccess.style.display = "block";
+          subscriberSection.style.display = "none";
         }
       } catch (err) {
         console.error("Error fetching user data:", err);
         adminSection.style.display = "none";
         noAccess.style.display = "block";
+        subscriberSection.style.display = "none";
       }
     } else {
       loginBtn.style.display = "inline-block";
@@ -240,27 +260,29 @@
       uidDisplay.style.display = "none";
       adminSection.style.display = "none";
       noAccess.style.display = "none";
+      subscriberSection.style.display = "none";
     }
   });
 
+  // Load unapproved comments for moderation
   async function loadUnapprovedComments() {
-    commentsContainer.innerHTML = ""; // Clear previous comments
+    commentsContainer.innerHTML = "";
 
-    // 1. Get all blog posts
+    // Get all blog posts
     const postsSnapshot = await getDocs(collection(db, "posts"));
 
     for (const postDoc of postsSnapshot.docs) {
       const postId = postDoc.id;
       const postData = postDoc.data();
 
-      // 2. Query comments subcollection where approved == false
+      // Query comments where approved == false
       const commentsRef = collection(db, "posts", postId, "comments");
       const q = query(commentsRef, where("approved", "==", false));
       const commentsSnapshot = await getDocs(q);
 
-      if (commentsSnapshot.empty) continue; // no unapproved comments in this post
+      if (commentsSnapshot.empty) continue;
 
-      // Add a header for this post's comments
+      // Add header for this post's comments
       const postHeader = document.createElement("h3");
       postHeader.textContent = `Comments for post: ${postData.title || postId}`;
       commentsContainer.appendChild(postHeader);
@@ -280,26 +302,29 @@
     }
   }
 
+  // Approve comment
   window.approveComment = async function(postId, commentId) {
     try {
       await updateDoc(doc(db, "posts", postId, "comments", commentId), { approved: true });
-      loadUnapprovedComments(); // Refresh list after approval
+      await loadUnapprovedComments();
     } catch (err) {
       alert("Error approving comment: " + err.message);
       console.error(err);
     }
   };
 
+  // Delete comment
   window.deleteComment = async function(postId, commentId) {
     try {
       await deleteDoc(doc(db, "posts", postId, "comments", commentId));
-      loadUnapprovedComments(); // Refresh list after deletion
+      await loadUnapprovedComments();
     } catch (err) {
       alert("Error deleting comment: " + err.message);
       console.error(err);
     }
   };
 
+  // Add blog post form submit handler
   blogForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     message.textContent = "";
@@ -332,6 +357,7 @@
     }
   });
 
+  // Add project form submit handler
   projectForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     projectMessage.textContent = "";
@@ -364,19 +390,41 @@
       projectMessage.style.color = "limegreen";
       projectMessage.textContent = "Project added successfully!";
       projectForm.reset();
-      window.aceEditor.setValue("", -1); // clear ace editor after reset
+      window.aceEditor.setValue("", -1);
     } catch (err) {
       console.error("Error adding project:", err);
       projectMessage.style.color = "red";
       projectMessage.textContent = "Error adding project: " + err.message;
     }
   });
-</script>
 
-<!-- Ace Editor CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js" crossorigin="anonymous"></script>
+  // Load subscribers list
+  async function loadSubscribers() {
+    const list = document.getElementById("subscriberList");
+    list.innerHTML = "";
 
-<script>
+    try {
+      const snapshot = await getDocs(collection(db, "subscribers"));
+      if (snapshot.empty) {
+        list.innerHTML = "<li>No subscribers yet.</li>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = data.email;
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Failed to load subscribers:", err);
+      const li = document.createElement("li");
+      li.textContent = "Error loading subscribers.";
+      list.appendChild(li);
+    }
+  }
+
+  // Initialize Ace Editor when DOM loaded
   document.addEventListener("DOMContentLoaded", () => {
     window.aceEditor = ace.edit("aceEditor");
     aceEditor.setTheme("ace/theme/monokai");
