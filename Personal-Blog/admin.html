@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "f9f4b127-9302-4e3c-98ef-67e1819292a0",
+    });
+  });
+</script>
+
+<title>Admin Dashboard - Let Dreamers Dream</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
+    color: #fff;
+    margin: 0; padding: 2rem;
+    min-height: 100vh;
+  }
+  #uidDisplay {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #00ffff;
+    color: black;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 9999;
+  }
+  button, input, textarea {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+  }
+  input, textarea {
+    width: 100%;
+    max-width: 400px;
+  }
+  button {
+    cursor: pointer;
+    background: #00ffff;
+    color: black;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #00cccc;
+  }
+  form {
+    max-width: 500px;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+  }
+  #message, #projectMessage, #articleMessage {
+    margin-top: 0.5rem;
+    font-weight: bold;
+  }
+  h2 {
+    border-bottom: 1px solid #00ffff;
+    padding-bottom: 0.3rem;
+  }
+  .comment {
+    border: 1px solid #00cccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #111;
+    border-radius: 8px;
+  }
+  hr {
+    margin: 3rem 0;
+    border-color: #444;
+  }
+  label {
+    color: #ccc;
+  }
+</style>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<div id="authSection">
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Sign Out</button>
+</div>
+
+<div id="uidDisplay" style="display:none;"></div>
+
+<div id="adminSection" style="display:none;">
+
+  <!-- BLOG POST FORM -->
+  <section id="blogSection">
+    <h2>Add New Blog Post</h2>
+    <form id="blogForm">
+      <label>Title<br />
+        <input type="text" id="title" required />
+      </label><br />
+      <label>Category<br />
+        <input type="text" id="category" required placeholder="e.g. javascript, html, thoughts" />
+      </label><br />
+      <label>Content (HTML allowed)<br />
+        <textarea id="content" rows="6" required></textarea>
+      </label><br />
+      <button type="submit">Add Blog Post</button>
+    </form>
+    <div id="message"></div>
+  </section>
+
+  <!-- PROJECT FORM -->
+  <section id="projectSection">
+    <h2>Add New Coding Project</h2>
+    <form id="projectForm">
+      <label>Project Title<br />
+        <input type="text" id="projectTitle" required />
+      </label><br />
+      <label>Category<br />
+        <input type="text" id="projectCategory" required placeholder="e.g. JavaScript, Python, Web" />
+      </label><br />
+      <label>Description<br />
+        <textarea id="projectDescription" rows="5" required></textarea>
+      </label><br />
+      <label>Project Code (HTML/JS/Python)<br />
+        <div id="aceEditor" style="width:100%; height:300px; border:1px solid #00cccc; border-radius:6px;"></div>
+        <textarea id="projectCode" name="projectCode" style="display:none;"></textarea>
+      </label><br />
+      <label>Project URL (optional)<br />
+        <input type="url" id="projectUrl" placeholder="https://example.com" />
+      </label><br />
+      <button type="submit">Add Project</button>
+    </form>
+    <div id="projectMessage"></div>
+  </section>
+
+  <!-- COMMENT MODERATION -->
+  <section id="commentModeration">
+    <h2>Moderate Comments</h2>
+    <div id="commentsContainer"></div>
+  </section>
+
+  <!-- SUBSCRIBER LIST SECTION -->
+  <section id="subscriberSection">
+    <h2>Newsletter Subscribers</h2>
+    <ul id="subscriberList" style="list-style:none; padding-left:0;"></ul>
+  </section>
+
+  <!-- ARTICLE CREATION SECTION -->
+  <section id="articleSection">
+    <hr style="margin: 3rem 0; border-color: #444;" />
+    <h2 style="color: #fff;">Create Article</h2>
+    <form id="articleForm">
+      <div style="margin-bottom: 1rem;">
+        <label style="color: #ccc;">Title:</label><br />
+        <input id="article-title" type="text" style="width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem;" required />
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="color: #ccc;">Author:</label><br />
+        <input id="article-author" type="text" placeholder="e.g. Agastya Bhadani" style="width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem;" required />
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="color: #ccc;">Category:</label><br />
+        <input id="article-category" type="text" placeholder="e.g. Marketing, Web Design" style="width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem;" required />
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="color: #ccc;">Read Time (e.g. 4 Min Read):</label><br />
+        <input id="article-readtime" type="text" placeholder="e.g. 3 Min Read" style="width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem;" required />
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="color: #ccc;">Body:</label><br />
+        <textarea id="article-body" rows="10" style="width: 100%; max-width: 400px; padding: 0.5rem;" required></textarea>
+      </div>
+      <button type="submit" style="padding: 0.6rem 1.2rem; background: #00ffff; color: black; border: none; border-radius: 5px; font-weight: bold;">Submit Article</button>
+    </form>
+    <div id="articleMessage"></div>
+  </section>
+
+</div>
+
+<div id="noAccess" style="display:none; color:#f66; margin-top:2rem;">
+  Access denied. You are not an admin.
+</div>
+
+<!-- Ace Editor CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js" crossorigin="anonymous"></script>
+
+<!-- All Firebase & App code consolidated inside one module script -->
+<script type="module">
+  // Safe API Key fetch (optional)
+  fetch('/api/key')
+  .then(res => res.json())
+  .then(data => {
+    console.log("Safe Google API Key:", data.key);
+  });
+
+  // Firebase imports
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    serverTimestamp,
+    query,
+    where,
+    getDocs,
+    updateDoc,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Firebase config and initialization
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+    authDomain: "letdreamersdream.firebaseapp.com",
+    projectId: "letdreamersdream",
+    storageBucket: "letdreamersdream.appspot.com",
+    messagingSenderId: "769338292042",
+    appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  // DOM elements
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const uidDisplay = document.getElementById("uidDisplay");
+  const adminSection = document.getElementById("adminSection");
+  const noAccess = document.getElementById("noAccess");
+  const blogForm = document.getElementById("blogForm");
+  const message = document.getElementById("message");
+  const projectForm = document.getElementById("projectForm");
+  const projectMessage = document.getElementById("projectMessage");
+  const commentsContainer = document.getElementById("commentsContainer");
+  const articleForm = document.getElementById("articleForm");
+  const articleMessage = document.getElementById("articleMessage");
+
+  // Login handler
+  loginBtn.onclick = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Signed in as:", result.user.uid);
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      alert("Sign-in failed: " + error.message);
+    }
+  };
+
+  // Logout handler
+  logoutBtn.onclick = async () => {
+    try {
+      await signOut(auth);
+      console.log("Signed out");
+    } catch (error) {
+      console.error("Sign-out error:", error);
+      alert("Sign-out failed: " + error.message);
+    }
+  };
+
+  // Auth state listener
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      uidDisplay.style.display = "block";
+      uidDisplay.textContent = `Your UID: ${user.uid}`;
+
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists() && userDocSnap.data().role === "admin") {
+          adminSection.style.display = "block";
+          noAccess.style.display = "none";
+          await loadUnapprovedComments();
+          await loadSubscribers();
+        } else {
+          adminSection.style.display = "none";
+          noAccess.style.display = "block";
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        adminSection.style.display = "none";
+        noAccess.style.display = "block";
+      }
+    } else {
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      uidDisplay.style.display = "none";
+      adminSection.style.display = "none";
+      noAccess.style.display = "none";
+    }
+  });
+
+  // Load unapproved comments for moderation
+  async function loadUnapprovedComments() {
+    commentsContainer.innerHTML = "";
+
+    const postsSnapshot = await getDocs(collection(db, "posts"));
+    for (const postDoc of postsSnapshot.docs) {
+      const postId = postDoc.id;
+      const postData = postDoc.data();
+      const commentsRef = collection(db, "posts", postId, "comments");
+      const q = query(commentsRef, where("approved", "==", false));
+      const commentsSnapshot = await getDocs(q);
+
+      if (commentsSnapshot.empty) continue;
+
+      const postHeader = document.createElement("h3");
+      postHeader.textContent = `Comments for post: ${postData.title || postId}`;
+      commentsContainer.appendChild(postHeader);
+
+      commentsSnapshot.forEach(commentDoc => {
+        const commentData = commentDoc.data();
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `
+          <p><strong>Commenter:</strong> ${commentData.commenter || "Unknown"}</p>
+          <p><strong>Comment:</strong> ${commentData.comment || ""}</p>
+          <button onclick="approveComment('${postId}', '${commentDoc.id}')">Approve</button>
+          <button onclick="deleteComment('${postId}', '${commentDoc.id}')">Delete</button>
+        `;
+        commentsContainer.appendChild(div);
+      });
+    }
+  }
+
+  // Approve comment
+  window.approveComment = async function(postId, commentId) {
+    try {
+      await updateDoc(doc(db, "posts", postId, "comments", commentId), { approved: true });
+      await loadUnapprovedComments();
+    } catch (err) {
+      alert("Error approving comment: " + err.message);
+      console.error(err);
+    }
+  };
+
+  // Delete comment
+  window.deleteComment = async function(postId, commentId) {
+    try {
+      await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+      await loadUnapprovedComments();
+    } catch (err) {
+      alert("Error deleting comment: " + err.message);
+      console.error(err);
+    }
+  };
+  
+
+  // Function to send OneSignal push notification
+async function sendPushNotification(title, body) {
+  try {
+    const response = await fetch("http://localhost:3000/send-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ title, message: body })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Push notification sent:", data);
+    } else {
+      console.error("Push notification failed:", data);
+    }
+  } catch (err) {
+    console.error("Push notification error:", err);
+  }
+}
+
+
+  // Add blog post form submit handler with push notification
+  blogForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    message.textContent = "";
+    message.style.color = "";
+
+    const title = document.getElementById("title").value.trim();
+    const category = document.getElementById("category").value.trim().toLowerCase();
+    const content = document.getElementById("content").value.trim();
+
+    if (!title || !category || !content) {
+      message.style.color = "red";
+      message.textContent = "Please fill in all fields.";
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "posts"), {
+        title,
+        category,
+        content,
+        createdAt: serverTimestamp()
+      });
+      message.style.color = "limegreen";
+      message.textContent = "Blog post added successfully!";
+      blogForm.reset();
+
+      // Send push notification after blog post is added
+      await sendPushNotification(title, `A new blog has been published in ${category}`);
+    } catch (err) {
+      console.error("Error adding blog post:", err);
+      message.style.color = "red";
+      message.textContent = "Error adding blog post: " + err.message;
+    }
+  });
+
+  // Add project form submit handler
+  projectForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    projectMessage.textContent = "";
+    projectMessage.style.color = "";
+
+    document.getElementById("projectCode").value = window.aceEditor.getValue();
+
+    const title = document.getElementById("projectTitle").value.trim();
+    const category = document.getElementById("projectCategory").value.trim().toLowerCase();
+    const description = document.getElementById("projectDescription").value.trim();
+    const code = document.getElementById("projectCode").value.trim();
+    const url = document.getElementById("projectUrl").value.trim();
+
+    if (!title || !category || !description || !code) {
+      projectMessage.style.color = "red";
+      projectMessage.textContent = "Please fill in all required fields including project code.";
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "projects"), {
+        title,
+        category,
+        description,
+        code,
+        url: url || null,
+        createdAt: serverTimestamp()
+      });
+      projectMessage.style.color = "limegreen";
+      projectMessage.textContent = "Project added successfully!";
+      projectForm.reset();
+      window.aceEditor.setValue("", -1);
+    } catch (err) {
+      console.error("Error adding project:", err);
+      projectMessage.style.color = "red";
+      projectMessage.textContent = "Error adding project: " + err.message;
+    }
+  });
+
+  // Add article form submit handler
+  articleForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    articleMessage.textContent = "";
+    articleMessage.style.color = "";
+
+    const title = document.getElementById("article-title").value.trim();
+    const body = document.getElementById("article-body").value.trim();
+    const author = document.getElementById("article-author").value.trim();
+    const category = document.getElementById("article-category").value.trim();
+    const readTime = document.getElementById("article-readtime").value.trim();
+
+    if (!title || !body || !author || !category || !readTime) {
+      articleMessage.style.color = "red";
+      articleMessage.textContent = "Please fill in all article fields.";
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "articles"), {
+        title,
+        body,
+        author,
+        category,
+        readTime,
+        createdAt: serverTimestamp()
+      });
+      articleMessage.style.color = "limegreen";
+      articleMessage.textContent = "Article created successfully!";
+      articleForm.reset();
+    } catch (err) {
+      console.error("Error creating article:", err);
+      articleMessage.style.color = "red";
+      articleMessage.textContent = "Error creating article: " + err.message;
+    }
+  });
+
+  // Load newsletter subscribers
+  async function loadSubscribers() {
+    const subsList = document.getElementById("subscriberList");
+    subsList.innerHTML = "";
+    try {
+      const subsSnapshot = await getDocs(collection(db, "subscribers"));
+      subsSnapshot.forEach(doc => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().email || "(no email)";
+        subsList.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Error loading subscribers:", err);
+    }
+  }
+
+  // Initialize Ace Editor
+  window.aceEditor = ace.edit("aceEditor");
+  window.aceEditor.setTheme("ace/theme/monokai");
+  window.aceEditor.session.setMode("ace/mode/javascript");
+  window.aceEditor.setOptions({
+    fontSize: "14pt",
+    showPrintMargin: false,
+    wrap: true
+  });
+
+</script>
+
+</body>
+</html>

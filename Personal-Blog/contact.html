@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Let Dreamers Dream – Contact (With Auth)</title>
+
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: black;
+      color: white;
+      overflow-x: hidden;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light-mode {
+      background: #f0f0f0;
+      color: #222;
+    }
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      transition: opacity 0.3s;
+    }
+    body.light-mode canvas {
+      opacity: 0.3;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem 0 1rem;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    nav {
+      text-align: center;
+      margin: 2rem 0;
+    }
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: #00ffff;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+    }
+    body.light-mode nav a {
+      color: #006666;
+    }
+    main {
+      max-width: 600px;
+      margin: 0 auto 4rem;
+      padding: 0 1rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin: 0.8rem 0 0.3rem;
+      font-weight: bold;
+    }
+    input, textarea {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    input[type="submit"], button {
+      background: #00ffff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 1rem;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      transition: background 0.3s;
+    }
+    input[type="submit"]:hover, button:hover {
+      background: #00cccc;
+    }
+    #newsletterMsg {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    #socialLinks {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    #socialLinks a {
+      margin: 0 0.8rem;
+      color: #00ffff;
+      font-size: 2rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    #socialLinks a:hover {
+      color: #00cccc;
+    }
+    body.light-mode #socialLinks a {
+      color: #006666;
+    }
+    body.light-mode #socialLinks a:hover {
+      color: #004d4d;
+    }
+    #toggleThemeBtn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: #00ffff;
+      color: black;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.3s;
+    }
+    #toggleThemeBtn:hover {
+      background: #00cccc;
+    }
+    @media (max-width: 600px) {
+      #socialLinks a {
+        font-size: 1.6rem;
+        margin: 0 0.5rem;
+      }
+    }
+    #authContainer {
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 2px solid #00ffff;
+      border-radius: 12px;
+      background: rgba(0, 255, 255, 0.1);
+    }
+    #authContainer h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #authContainer form {
+      display: flex;
+      flex-direction: column;
+    }
+    #authContainer input {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    #authContainer button {
+      margin-top: 1rem;
+    }
+    #signOutBtn, #testSubscribersBtn {
+      background: #ff4444;
+      color: white;
+      font-weight: bold;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+      margin: 1rem auto;
+      display: block;
+      transition: background 0.3s;
+    }
+    #signOutBtn:hover, #testSubscribersBtn:hover {
+      background: #cc0000;
+    }
+  </style>
+  <head>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerParam: { scope: "/Personal-Blog/" },
+      autoRegister: false, // Prevent default root-level registration
+      notifyButton: { enable: true },
+      welcomeNotification: {
+        title: "Welcome to Personal Blog!",
+        message: "Thanks for subscribing to notifications!"
+      }
+    });
+    // Manually register the service worker
+    await OneSignal.Slidedown.promptPush();
+  });
+</script>
+  
+</head>
+</head>
+<body>
+  <button id="toggleThemeBtn" aria-label="Toggle Dark/Light Mode">Light Mode</button>
+  <canvas id="stars"></canvas>
+  <header>
+    <h1>Let Dreamers Dream</h1>
+    <p>Get in touch or sign up for updates</p>
+  </header>
+  <nav>
+    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
+  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+  </nav>
+  <main>
+    <div id="authContainer" style="display:none;">
+      <h2>Sign In / Sign Up</h2>
+      <form id="authForm">
+        <input type="email" id="authEmail" placeholder="Email" required autocomplete="username" />
+        <input type="password" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6" />
+        <button type="submit" id="authSubmitBtn">Sign In</button>
+      </form>
+      <p style="text-align:center; margin-top: 1rem;">
+        <button id="toggleAuthModeBtn" style="background:none; border:none; color:#00ffff; cursor:pointer;">
+          Create an account
+        </button>
+      </p>
+      <p id="authMessage" style="text-align:center; margin-top: 0.5rem; color: #ff4444;"></p>
+    </div>
+    <div id="contactContent" style="display:none;">
+      <form id="contactForm" action="https://formspree.io/f/xvgrdqbw" method="POST" novalidate>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required placeholder="Your full name" />
+        <label for="email">Email</label>
+        <input id="email" name="_replyto" type="email" required placeholder="Your email address" />
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" required placeholder="Write your message here..."></textarea>
+        <input type="submit" value="Send Message" />
+      </form>
+      <hr style="margin: 3rem 0; border-color: #00ffff66;" />
+      <section aria-label="Newsletter Signup">
+        <h2>Subscribe to our Newsletter</h2>
+        <form id="newsletterForm" novalidate>
+          <label for="newsletterEmail">Email</label>
+          <input id="newsletterEmail" type="email" placeholder="Your email address" required />
+          <button type="submit" disabled>Subscribe</button>
+        </form>
+        <p id="newsletterMsg" role="alert" aria-live="polite"></p>
+      </section>
+      <section id="socialLinks" aria-label="Social media links">
+        <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub">🗃</a>
+        <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">👥</a>
+        <a href="https://twitter.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter">🐦</a>
+      </section>
+      <button id="signOutBtn" aria-label="Sign Out">Sign Out</button>
+      <button id="testSubscribersBtn" aria-label="Test Subscribers Write">Test Subscribers Write</button>
+    </div>
+  </main>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+    import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.firebasestorage.app",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3",
+      measurementId: "G-3PEH6QWSWJ"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const authContainer = document.getElementById('authContainer');
+    const contactContent = document.getElementById('contactContent');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authMessage = document.getElementById('authMessage');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const newsletterForm = document.getElementById('newsletterForm');
+    const newsletterMsg = document.getElementById('newsletterMsg');
+    const testSubscribersBtn = document.getElementById('testSubscribersBtn');
+
+    let isSignInMode = true;
+    let isAuthStateResolved = false;
+
+    // Toggle between Sign In and Sign Up modes
+    toggleAuthModeBtn.addEventListener('click', () => {
+      isSignInMode = !isSignInMode;
+      authSubmitBtn.textContent = isSignInMode ? 'Sign In' : 'Sign Up';
+      toggleAuthModeBtn.textContent = isSignInMode ? 'Create an account' : 'Have an account? Sign In';
+      authMessage.textContent = '';
+    });
+
+    // Handle auth form submit
+    authForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = authEmail.value.trim();
+      const password = authPassword.value.trim();
+
+      if (!email || !password) {
+        authMessage.textContent = 'Email and password are required.';
+        return;
+      }
+      authMessage.textContent = '';
+
+      try {
+        if (isSignInMode) {
+          await signInWithEmailAndPassword(auth, email, password);
+          console.log('Sign-in successful:', email);
+        } else {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            email: email,
+            role: 'user',
+            createdAt: serverTimestamp()
+          });
+          console.log('Sign-up successful, user document created:', email);
+        }
+      } catch (err) {
+        console.error('Auth error:', err.code, err.message);
+        authMessage.textContent = err.message;
+      }
+    });
+
+    // Sign out button
+    signOutBtn.addEventListener('click', () => {
+      signOut(auth);
+      console.log('User signed out');
+    });
+
+    // Listen for auth state changes
+    onAuthStateChanged(auth, user => {
+      isAuthStateResolved = true;
+      if (user) {
+        authContainer.style.display = 'none';
+        contactContent.style.display = 'block';
+        console.log('User logged in:', user.email, 'UID:', user.uid, 'Auth state:', user);
+        newsletterForm.querySelector('button').disabled = false;
+        testSubscribersBtn.disabled = false;
+      } else {
+        authContainer.style.display = 'block';
+        contactContent.style.display = 'none';
+        console.log('User logged out');
+        newsletterForm.querySelector('button').disabled = true;
+        testSubscribersBtn.disabled = true;
+      }
+    });
+
+    // Star canvas
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    function setupCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    setupCanvas();
+
+    const stars = [];
+    for (let i = 0; i < 100; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        vx: Math.random() * 0.5 - 0.25,
+        vy: Math.random() * 0.5 - 0.25
+      });
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      for (const star of stars) {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+        star.x += star.vx;
+        star.y += star.vy;
+        if (star.x < 0 || star.x > canvas.width || star.y < 0 || star.y > canvas.height) {
+          star.x = Math.random() * canvas.width;
+          star.y = Math.random() * canvas.height;
+        }
+      }
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+
+    window.addEventListener('resize', setupCanvas);
+
+    // Dark/light toggle
+    const toggleBtn = document.getElementById('toggleThemeBtn');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      toggleBtn.textContent = document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
+    });
+
+    // LocalStorage helpers
+    function getLocalSubscribers() {
+      try {
+        const stored = localStorage.getItem('subscribers');
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        console.error('Error parsing localStorage subscribers:', err.message);
+        localStorage.removeItem('subscribers');
+        return [];
+      }
+    }
+
+    function saveLocalSubscribers(subscribers) {
+      try {
+        if (!Array.isArray(subscribers)) {
+          console.error('saveLocalSubscribers: Input is not an array:', subscribers);
+          return;
+        }
+        localStorage.setItem('subscribers', JSON.stringify(subscribers));
+      } catch (err) {
+        console.error('Error saving to localStorage:', err.message);
+      }
+    }
+
+    function isEmailInLocalSubscribers(email) {
+      const subs = getLocalSubscribers();
+      return subs.includes(email);
+    }
+
+    function addEmailToLocalSubscribers(email) {
+      const subs = getLocalSubscribers();
+      if (!subs.includes(email)) {
+        subs.push(email);
+        saveLocalSubscribers(subs);
+        return true;
+      }
+      return false;
+    }
+
+    // Unified subscribers write function
+    async function writeToSubscribers(email, source) {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      console.log(`[${source}] Writing to subscribers collection:`, { email, uid: auth.currentUser.uid });
+      console.log(`[${source}] Collection path:`, collection(db, 'subscribers').path);
+      console.log(`[${source}] Auth token:`, (await auth.currentUser.getIdToken()).substring(0, 10) + '...');
+      const subscribersRef = collection(db, 'subscribers');
+      await addDoc(subscribersRef, {
+        email: email,
+        timestamp: serverTimestamp()
+      });
+      console.log(`[${source}] Write to subscribers successful for email:`, email);
+      return true;
+    }
+
+    // Test subscribers write
+    async function testSubscribersWrite() {
+      if (!auth.currentUser) {
+        newsletterMsg.textContent = 'You must be signed in to test.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+      try {
+        await writeToSubscribers('test@example.com', 'TestButton');
+        newsletterMsg.textContent = 'Test write to subscribers successful!';
+        newsletterMsg.style.color = 'limegreen';
+      } catch (err) {
+        console.error('[TestButton] Test write to subscribers failed:', err.code, err.message);
+        newsletterMsg.textContent = `Test write failed: ${err.message}. Check Firestore rules.`;
+        newsletterMsg.style.color = 'red';
+      }
+    }
+
+    testSubscribersBtn.addEventListener('click', testSubscribersWrite);
+
+    // Debug query function
+    async function debugSubscribersQuery(email) {
+      try {
+        console.log('[DebugQuery] Checking subscribers for email:', email);
+        const subscribersRef = collection(db, 'subscribers');
+        const q = query(subscribersRef, where('email', '==', email));
+        console.log('[DebugQuery] Query path:', q.path);
+        const querySnapshot = await getDocs(q);
+        console.log('[DebugQuery] Query result:', querySnapshot.empty ? 'No documents' : `${querySnapshot.size} documents`);
+        return !querySnapshot.empty;
+      } catch (err) {
+        console.error('[DebugQuery] Query failed:', err.code, err.message);
+        return false;
+      }
+    }
+
+    window.debugSubscribersQuery = debugSubscribersQuery; // For Console testing
+
+    // Newsletter form handler
+    newsletterForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const emailInput = document.getElementById('newsletterEmail');
+      const email = emailInput.value.trim().toLowerCase();
+
+      if (!email) {
+        newsletterMsg.textContent = 'Please enter a valid email.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+
+      if (!isAuthStateResolved) {
+        newsletterMsg.textContent = 'Authentication state is still loading. Please try again.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+
+      if (!auth.currentUser) {
+        newsletterMsg.textContent = 'You must be signed in to subscribe.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+
+      console.log('User authenticated:', auth.currentUser.email, 'UID:', auth.currentUser.uid, 'Auth state:', auth.currentUser);
+      try {
+        const token = await auth.currentUser.getIdToken(true);
+        console.log('Token refreshed successfully:', token.substring(0, 10) + '...');
+      } catch (tokenErr) {
+        console.error('Token refresh failed:', tokenErr.code, tokenErr.message);
+        newsletterMsg.textContent = 'Authentication error. Please sign in again.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+
+      // Test write to testCollection
+      try {
+        console.log('Testing write to testCollection for UID:', auth.currentUser.uid);
+        const testRef = doc(db, 'testCollection', 'testDoc');
+        await setDoc(testRef, { testField: 'Test Auth', timestamp: serverTimestamp() });
+        console.log('Test write to testCollection successful');
+      } catch (testErr) {
+        console.error('Test write to testCollection failed:', testErr.code, testErr.message);
+        newsletterMsg.textContent = 'Authentication test failed. Please sign in again.';
+        newsletterMsg.style.color = 'red';
+        return;
+      }
+
+      if (isEmailInLocalSubscribers(email)) {
+        newsletterMsg.textContent = 'You are already subscribed (local)!';
+        newsletterMsg.style.color = 'orange';
+        return;
+      }
+
+      try {
+        console.log('Checking Firestore for subscriber:', email);
+        // Temporarily bypass query to test write
+        let isSubscribed = false;
+        const bypassQuery = true; // Set to false to re-enable query
+        if (!bypassQuery) {
+          const subscribersRef = collection(db, 'subscribers');
+          const q = query(subscribersRef, where('email', '==', email));
+          console.log('[NewsletterForm] Query path:', q.path);
+          const querySnapshot = await getDocs(q);
+          isSubscribed = !querySnapshot.empty;
+          console.log('[NewsletterForm] Query result:', isSubscribed ? 'Subscriber exists' : 'No subscriber');
+        } else {
+          console.log('[NewsletterForm] Bypassing query for testing');
+        }
+
+        if (isSubscribed) {
+          addEmailToLocalSubscribers(email);
+          newsletterMsg.textContent = 'You are already subscribed (Firestore)!';
+          newsletterMsg.style.color = 'orange';
+          console.log('Subscriber already exists in Firestore:', email);
+        } else {
+          await writeToSubscribers(email, 'NewsletterForm');
+          addEmailToLocalSubscribers(email);
+          newsletterMsg.textContent = 'Thank you for subscribing!';
+          newsletterMsg.style.color = 'limegreen';
+          console.log('Subscriber added to Firestore:', email);
+        }
+
+        emailInput.value = '';
+      } catch (error) {
+        console.error('[NewsletterForm] Error subscribing to Firestore:', error.code, error.message);
+        newsletterMsg.textContent = `Error: ${error.message}. Please check Firestore rules or contact support.`;
+        newsletterMsg.style.color = 'red';
+        if (error.code === 'permission-denied') {
+          console.error('[NewsletterForm] Permission denied. User UID:', auth.currentUser.uid, 'Rules may not be deployed or auth token invalid.');
+          newsletterMsg.textContent += ' Contact support or verify rules in Firebase Console.';
+        } else if (error.code === 'unavailable') {
+          console.error('[NewsletterForm] Firestore unavailable. Check network or Firebase status.');
+        }
+      }
+    });
+
+    // Test Firestore write
+    async function testFirestoreWrite() {
+      if (!auth.currentUser) {
+        console.log('Skipping test write: user not authenticated');
+        return;
+      }
+      try {
+        console.log('Attempting test write for UID:', auth.currentUser.uid);
+        const testRef = doc(db, 'testCollection', 'testDoc');
+        await setDoc(testRef, { testField: 'Hello Firestore!', timestamp: serverTimestamp() });
+        console.log('Test write successful for UID:', auth.currentUser.uid);
+      } catch (err) {
+        console.error('Test write failed:', err.code, err.message);
+        alert('Test Firestore write failed: ' + err.message);
+      }
+    }
+
+    window.onload = () => {
+      console.log('Page loaded, waiting for auth state');
+      if (isAuthStateResolved && auth.currentUser) {
+        testFirestoreWrite();
+      } else {
+        console.log('Skipping test write on load: user not authenticated or auth state not resolved');
+      }
+    };
+  </script>
+</body>
+</html>
