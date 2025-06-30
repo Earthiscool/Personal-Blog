@@ -4,14 +4,18 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Projects - Let Dreamers Dream</title>
-<nav style="background:#111; padding:1rem; text-align:center; border-bottom:2px solid #00ffff; margin-bottom:2rem;">
-  <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+<nav style="background:#111; padding:1rem; border-bottom:2px solid #00ffff; margin-bottom:2rem; position: relative;">
+  <button id="navToggleBtn" style="display:none; position:absolute; top:1rem; right:1rem; background:none; border:none; color:#00ffff; font-size:2rem; cursor:pointer;">&#9776;</button>
+  <div id="navLinks" style="text-align:center;">
+    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
+    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+  </div>
 </nav>
+
 
 <!-- Firebase Compat SDK for Auth only -->
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -113,6 +117,25 @@
   body.light-mode button:hover {
     background: #007777 !important;
   }
+  /* Show hamburger button on small screens */
+@media (max-width: 600px) {
+  #navToggleBtn {
+    display: block !important;
+  }
+  #navLinks {
+    display: none;
+    text-align: left;
+    margin-top: 1rem;
+  }
+  #navLinks.show {
+    display: block;
+  }
+  #navLinks a {
+    display: block;
+    margin: 0.5rem 0;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -292,6 +315,12 @@
   themeToggleBtn.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-mode');
     themeToggleBtn.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+  });
+  const navToggleBtn = document.getElementById('navToggleBtn');
+  const navLinks = document.getElementById('navLinks');
+
+  navToggleBtn.addEventListener('click', () => {
+    navLinks.classList.toggle('show');
   });
 </script>
 
