@@ -13,8 +13,7 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      // no serviceWorkerPath or updaterPath here!
       serviceWorkerParam: { scope: "/Personal-Blog/" },
       notifyButton: { enable: true },
       welcomeNotification: {
@@ -22,10 +21,10 @@
         message: "Thanks for subscribing to notifications!"
       }
     });
-
     await OneSignal.showSlidedownPrompt();
   });
 </script>
+
 
 
 
