@@ -11,9 +11,9 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "Personal-Blog", // ✅ just the folder
-      serviceWorkerUpdaterPath: "Personal-Blog", // ✅ just the folder
-      serviceWorkerParam: { scope: "/Personal-Blog/" }, // ✅ full URL scope
+      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerParam: { scope: "/Personal-Blog/" },
       notifyButton: { enable: true },
       welcomeNotification: {
         title: "Welcome to Let Dreamers Dream!",
