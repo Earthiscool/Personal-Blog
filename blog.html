@@ -5,18 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "3fb40bfe-9737-4053-baa6-ac454a879911",
-      path: "/Personal-Blog/", // 👈 REQUIRED for GitHub project pages
-      notifyButton: {
-        enable: true,
-      },
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<head>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+        serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+        serviceWorkerParam: { scope: "/Personal-Blog/" },
+        notifyButton: { enable: true },
+        welcomeNotification: {
+          title: "Welcome to Personal Blog!",
+          message: "Thanks for subscribing to notifications!"
+        }
+      });
     });
-  });
-</script>
+  </script>
+  
+</head>
 
   <title>Let Dreamers Dream – Blog</title>
   <style>

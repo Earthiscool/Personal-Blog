@@ -4,8 +4,28 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Projects - Let Dreamers Dream</title>
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerParam: { scope: "/Personal-Blog/" },
+      notifyButton: { enable: true },
+      welcomeNotification: {
+        title: "Welcome to Personal Blog!",
+        message: "Thanks for subscribing to notifications!"
+      }
+    });
+  });
+</script>
+
+<!-- Existing Navigation -->
 <nav style="background:#111; padding:1rem; border-bottom:2px solid #00ffff; margin-bottom:2rem; position: relative;">
-  <button id="navToggleBtn" style="display:none; position:absolute; top:1rem; right:1rem; background:none; border:none; color:#00ffff; font-size:2rem; cursor:pointer;">&#9776;</button>
+  <button id="navToggleBtn" style="display:none; position:absolute; top:1rem; right:1rem; background:none; border:none; color:#00ffff; font-size:2rem; cursor:pointer;">☰</button>
   <div id="navLinks" style="text-align:center;">
     <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
     <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
@@ -15,8 +35,6 @@
     <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
   </div>
 </nav>
-
-
 <!-- Firebase Compat SDK for Auth only -->
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
@@ -135,7 +153,6 @@
     margin: 0.5rem 0;
   }
 }
-
 </style>
 </head>
 <body>
@@ -209,7 +226,7 @@
 
     // Show project code as visible text block, so user can see it
     // (optional: you can hide this if too long, or add toggle)
-    const escapedCode = data.code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedCode = data.code.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
 
     let urlLink = data.url ? `<a href="${data.url}" target="_blank" rel="noopener noreferrer" class="projectUrl">Open Project URL</a>` : "";
 
@@ -311,7 +328,6 @@
 
 <script>
   const themeToggleBtn = document.getElementById('themeToggleBtn');
-
   themeToggleBtn.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-mode');
     themeToggleBtn.textContent = isLight ? 'Dark Mode' : 'Light Mode';
@@ -323,6 +339,5 @@
     navLinks.classList.toggle('show');
   });
 </script>
-
 </body>
 </html>
