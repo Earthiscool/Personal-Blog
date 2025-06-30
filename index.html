@@ -14,12 +14,15 @@
       serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
       serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
       serviceWorkerParam: { scope: "/Personal-Blog/" },
+      autoRegister: false, // Prevent default root-level registration
       notifyButton: { enable: true },
       welcomeNotification: {
         title: "Welcome to Personal Blog!",
         message: "Thanks for subscribing to notifications!"
       }
     });
+    // Manually register the service worker
+    await OneSignal.Slidedown.promptPush();
   });
 </script>
 
