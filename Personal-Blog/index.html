@@ -11,27 +11,28 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
-      serviceWorkerParam: { scope: "/Personal-Blog/" },
-      autoRegister: false, // You handle prompting manually
+      path: "/Personal-Blog/Personal-Blog/",                     // site base path with nested folder
+      serviceWorkerPath: "/Personal-Blog/Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/Personal-Blog/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerParam: { scope: "/Personal-Blog/Personal-Blog/" },
+      autoRegister: false,
       notifyButton: { enable: true },
       welcomeNotification: {
         title: "Welcome to Personal Blog!",
-        message: "Thanks for subscribing to notifications!"
+        message: "Thanks for subscribing!"
       }
     });
 
-    // Ensure OneSignal is ready before prompting
     const isPushSupported = await OneSignal.isPushNotificationsSupported();
     if (isPushSupported) {
-      const isSubscribed = await OneSignal.isPushNotificationsEnabled();
-      if (!isSubscribed) {
+      const isEnabled = await OneSignal.isPushNotificationsEnabled();
+      if (!isEnabled) {
         await OneSignal.showSlidedownPrompt();
       }
     }
   });
 </script>
+
 
 
 <!-- Existing Navigation -->
