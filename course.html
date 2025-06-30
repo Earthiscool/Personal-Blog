@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced Python Course - Let Dreamers Dream</title>
+  <style>
+    /* RESET */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+      transition: background 0.3s, color 0.3s;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    body.dark {
+      background: #121212;
+      color: #ddd;
+      user-select: text;
+    }
+    header {
+      background: #007acc;
+      color: white;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      user-select: none;
+      position: relative;
+    }
+    header button#darkModeToggle {
+      background: #005fa3;
+      border: none;
+      color: white;
+      padding: 0.3rem 0.7rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      user-select: none;
+      transition: background 0.3s;
+    }
+    header button#darkModeToggle:hover {
+      background: #004d82;
+    }
+    .dashboard {
+      background: #005f99;
+      color: white;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    .dashboard span {
+      font-weight: 600;
+    }
+    .dashboard .streak::after {
+      content: '🔥';
+      margin-left: 0.3rem;
+    }
+    .leaderboard {
+      margin: 1rem;
+      padding: 0.5rem;
+      background: #eef6ff;
+      border-radius: 6px;
+      user-select: none;
+    }
+    body.dark .leaderboard {
+      background: #002233;
+    }
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .leaderboard th, .leaderboard td {
+      padding: 0.5rem;
+      text-align: left;
+    }
+    .leaderboard th {
+      font-weight: 700;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+    nav#lessonNav {
+      width: 270px;
+      background: #222;
+      color: #eee;
+      overflow-y: auto;
+      border-right: 3px solid #007acc;
+      padding-top: 1rem;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+    }
+    nav#lessonNav.dark {
+      background: #111;
+      border-color: #3399ff;
+    }
+    nav#lessonNav button.lesson-btn {
+      background: none;
+      border: none;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 1rem;
+      color: inherit;
+      border-left: 5px solid transparent;
+      margin: 0 1rem 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 3px 0 0 3px;
+      transition: background 0.3s, border-color 0.3s;
+      user-select: none;
+    }
+    nav#lessonNav button.lesson-btn:hover,
+    nav#lessonNav button.lesson-btn:focus-visible {
+      background: #005ea3;
+      outline: none;
+    }
+    nav#lessonNav button.lesson-btn.active {
+      background: #007acc;
+      border-color: #33aaff;
+      font-weight: 700;
+      color: white;
+      pointer-events: none;
+    }
+    nav#lessonNav button.lesson-btn.completed::after {
+      content: ' ✔';
+      color: #0f0;
+      font-weight: 700;
+      float: right;
+      margin-right: 5px;
+      user-select: none;
+    }
+    section#courseContent {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      background: white;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+    }
+    body.dark section#courseContent {
+      background: #1e1e1e;
+      color: #ddd;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    h3 {
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Fira Mono', monospace, monospace;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      user-select: text;
+      margin-bottom: 1rem;
+    }
+    body.dark pre {
+      background: #121212;
+    }
+    textarea#code-input {
+      width: 100%;
+      height: 240px;
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+      box-sizing: border-box;
+      background: white;
+      color: black;
+      transition: background 0.3s, color 0.3s;
+      user-select: text;
+    }
+    body.dark textarea#code-input {
+      background: #222;
+      border-color: #555;
+      color: #eee;
+    }
+    .code-controls {
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .code-controls button {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+      flex-grow: 1;
+      min-width: 110px;
+      text-align: center;
+    }
+    .code-controls button:hover,
+    .code-controls button:focus-visible {
+      background: #005f99;
+      outline: none;
+    }
+    .output-console {
+      background: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 1rem;
+      border-radius: 6px;
+      max-height: 200px;
+      max-width: 100%;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 2px solid #0f0;
+      margin-bottom: 1rem;
+      user-select: text;
+      transition: color 0.3s, background 0.3s, border-color 0.3s;
+    }
+    .dark .output-console {
+      background: #222;
+      border-color: #33ff33;
+    }
+    .motivation-message {
+      margin-top: 0.5rem;
+      font-weight: 600;
+      color: #007acc;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in;
+      user-select: none;
+    }
+    body.dark .motivation-message {
+      color: #3399ff;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #f00;
+      top: -10px;
+      animation: confetti 2s ease-in-out forwards;
+      z-index: 1000;
+    }
+    .quiz-section {
+      margin-top: 1.5rem;
+      background: #eef6ff;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body.dark .quiz-section {
+      background: #002233;
+    }
+    .quiz-section p {
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .quiz-options button {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin: 0.3rem 0.5rem 0 0;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .quiz-options button:hover,
+    .quiz-options button:focus-visible {
+      background: #005f99;
+      outline: none;
+    }
+    .quiz-result {
+      margin-top: 0.75rem;
+      font-weight: 700;
+      min-height: 1.5rem;
+      user-select: none;
+    }
+    .quiz-result.correct {
+      color: #0a0;
+    }
+    .quiz-result.incorrect {
+      color: #a00;
+    }
+    textarea.notes {
+      width: 100%;
+      min-height: 120px;
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+      box-sizing: border-box;
+      margin-top: 1rem;
+      transition: background 0.3s, color 0.3s;
+      user-select: text;
+    }
+    body.dark textarea.notes {
+      background: #222;
+      border-color: #555;
+      color: #eee;
+    }
+    label.notes-label {
+      font-weight: 600;
+      display: block;
+      margin-top: 1rem;
+      user-select: none;
+    }
+    .related-projects {
+      margin-top: 2rem;
+      font-weight: 600;
+      user-select: none;
+    }
+    .related-projects a {
+      display: inline-block;
+      margin-right: 1rem;
+      background: #007acc;
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      text-decoration: none;
+      user-select: none;
+      transition: background 0.3s;
+    }
+    .related-projects a:hover,
+    .related-projects a:focus-visible {
+      background: #005f99;
+      outline: none;
+    }
+    .progress-container {
+      background: #ddd;
+      border-radius: 20px;
+      margin: 1rem 1rem 0.5rem 1rem;
+      height: 18px;
+      overflow: hidden;
+      user-select: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #007acc;
+      width: 0%;
+      transition: width 0.5s ease-in-out;
+    }
+    body.dark .progress-container {
+      background: #333;
+    }
+    body.dark .progress-bar {
+      background: #3399ff;
+    }
+    .progress-text {
+      margin: 0 1rem 1rem 1rem;
+      font-weight: 600;
+      user-select: none;
+      color: #007acc;
+    }
+    body.dark .progress-text {
+      color: #3399ff;
+    }
+    .lesson-nav-footer {
+      margin-top: auto;
+      padding: 0.5rem 1rem;
+      background: #111;
+      border-top: 1px solid #007acc;
+      display: flex;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    .lesson-nav-footer button {
+      flex: 1;
+      padding: 0.5rem;
+      font-weight: 600;
+      background: #007acc;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .lesson-nav-footer button:disabled {
+      background: #555;
+      cursor: default;
+    }
+    .lesson-nav-footer button:hover:not(:disabled),
+    .lesson-nav-footer button:focus-visible:not(:disabled) {
+      background: #005f99;
+      outline: none;
+    }
+    .badge-container {
+      margin: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      user-select: none;
+    }
+    .badge {
+      background: #0a74da;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      animation: popIn 0.3s ease-in;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      80% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .badge svg {
+      width: 1em;
+      height: 1em;
+      fill: white;
+    }
+    @media (max-width: 900px) {
+      main {
+        flex-direction: column;
+      }
+      nav#lessonNav {
+        width: 100%;
+        height: 140px;
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-right: none;
+        border-bottom: 3px solid #007acc;
+        padding: 0.5rem;
+      }
+      nav#lessonNav button.lesson-btn {
+        margin: 0 0.5rem 0 0;
+        border-radius: 5px;
+        border-left: none;
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      section#courseContent {
+        height: auto;
+        padding: 1rem 1rem 2rem 1rem;
+      }
+      .lesson-nav-footer {
+        flex-direction: row;
+      }
+      .output-console {
+        max-height: 150px;
+      }
+    }
+  </style>
+  <head>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+    });
+  });
+</script>
+
+  
+</head>
+</head>
+<body>
+  <!-- Replace the existing <header> in your index.html with this -->
+<header>
+  <div class="header-content">
+    <span class="header-title">Advanced Python Programming Course</span>
+    <nav class="header-nav" aria-label="Header navigation">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="contact.html" class="nav-link">Contacts</a>
+      <a href="articles.html" class="nav-link">Article</a>
+      <a href="editor.html" class="nav-link">Editor</a>
+    </nav>
+  </div>
+  <button id="darkModeToggle" aria-label="Toggle Dark Mode">🌙</button>
+  <div class="dashboard" aria-label="Progress dashboard">
+    <span id="pointsDisplay">Points: 0</span>
+    <span id="streakDisplay" class="streak">Streak: 0 days</span>
+    <span id="goalDisplay">Daily Goal: 0/2 lessons</span>
+    <span id="timeDisplay">Time Today: 0 min</span>
+  </div>
+</header>
+
+<!-- Add these styles to your existing <style> section -->
+<style>
+  .header-content {
+    position: relative;
+    display: inline-block;
+  }
+  .header-title {
+    cursor: pointer;
+  }
+  .header-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #005f99;
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+    min-width: 150px;
+  }
+  .header-content:hover .header-nav {
+    display: block;
+  }
+  .header-nav a.nav-link {
+    display: block;
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+  .header-nav a.nav-link:hover,
+  .header-nav a.nav-link:focus-visible {
+    background: #004d82;
+    outline: none;
+  }
+  body.dark .header-nav {
+    background: #003366;
+  }
+  body.dark .header-nav a.nav-link:hover,
+  body.dark .header-nav a.nav-link:focus-visible {
+    background: #002244;
+  }
+</style>
+  <nav id="lessonNav" aria-label="Lesson Navigation">
+    <div class="leaderboard">
+      <h3>Leaderboard</h3>
+      <table id="leaderboardTable" aria-label="Leaderboard">
+        <thead>
+          <tr><th>Rank</th><th>Name</th><th>Points</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="progress-container" aria-hidden="true">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText" aria-live="polite" aria-atomic="true">Progress: 0 / 0</div>
+    <div class="badge-container" aria-label="Your badges" id="badgeContainer"></div>
+    <div class="lesson-nav-footer">
+      <button id="prevLessonBtn" aria-label="Previous lesson">⬅ Previous</button>
+      <button id="markCompleteBtn" aria-label="Mark lesson as completed">✔ Mark Complete</button>
+      <button id="nextLessonBtn" aria-label="Next lesson">Next ➡</button>
+    </div>
+  </nav>
+  <main>
+    <section id="courseContent" tabindex="0" aria-live="polite" aria-atomic="true">
+      <h2 id="lessonTitle">Loading...</h2>
+      <p id="lessonDescription">Please wait while the content loads.</p>
+      <h3>Code Editor</h3>
+      <textarea id="code-input" spellcheck="false" aria-label="Code editor input"></textarea>
+      <div class="code-controls" role="group" aria-label="Code editor controls">
+        <button id="runCodeBtn">▶ Run Code</button>
+        <button id="formatCodeBtn">🧹 Format Code</button>
+        <button id="copyCodeBtn">📋 Copy Code</button>
+        <button id="downloadCodeBtn">⬇ Download</button>
+        <button id="resetCodeBtn">↻ Reset</button>
+        <button id="showHintBtn" aria-pressed="false" aria-label="Show hint for this lesson">💡 Hint</button>
+      </div>
+      <pre class="output-console" id="output-console" aria-live="polite" aria-atomic="true" tabindex="0" role="region" aria-label="Code output console"></pre>
+      <div id="motivationMessage" class="motivation-message" aria-live="polite"></div>
+      <section id="hintArea" style="display:none; background:#eee; color:#333; padding:1rem; border-radius:6px; margin-bottom:1rem; user-select: text;"></section>
+      <section class="quiz-section" aria-label="Lesson quiz">
+        <p id="quizQuestion"></p>
+        <div id="quizOptions" class="quiz-options" role="radiogroup" aria-live="polite"></div>
+        <div id="quizResult" class="quiz-result" aria-live="polite"></div>
+        <button id="resetQuizBtn" style="display:none; margin-top: 0.5rem;">Reset Quiz</button>
+      </section>
+      <label for="lessonNotes" class="notes-label">Your Notes:</label>
+      <textarea id="lessonNotes" class="notes" aria-label="Lesson notes"></textarea>
+      <div class="related-projects" aria-label="Related projects and resources">
+        <h3>Related Projects</h3>
+        <a href="https://letdreamersdream.com/projects/python-data-analysis" target="_blank" rel="noopener noreferrer">Python Data Analysis</a>
+        <a href="https://letdreamersdream.com/projects/python-web-scraping" target="_blank" rel="noopener noreferrer">Python Web Scraping</a>
+      </div>
+    </section>
+  </main>
+  <script>
+    // ------------------------
+    // Data & Course Setup
+    // ------------------------
+    const lessons = [
+      {
+        id: "lesson1",
+        title: "Introduction to Python",
+        description: "Welcome to the course! Learn about Python's basics: variables, types, and printing.",
+        starterCode: `# Try printing your name\nprint("Hello, Let Dreamers!")`,
+        hint: "Use the print() function to output text.",
+        quiz: {
+          question: "What function do you use to print output to the console in Python?",
+          options: ["echo()", "print()", "console.log()", "write()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson2",
+        title: "Data Types and Variables",
+        description: "Learn about Python data types like integers, floats, strings, and how to assign variables.",
+        starterCode: `# Assign your age to a variable\nage = 21\nprint(age)`,
+        hint: "Variables are containers for data, assigned using '='.",
+        quiz: {
+          question: "Which of these is NOT a Python data type?",
+          options: ["int", "float", "string", "char"],
+          correctIndex: 3,
+        }
+      },
+      {
+        id: "lesson3",
+        title: "Control Flow: If Statements",
+        description: "Control program flow using if, elif, and else statements.",
+        starterCode: `# Check if a number is positive or negative\nnumber = 10\nif number > 0:\n    print("Positive")\nelse:\n    print("Non-positive")`,
+        hint: "Use indentation and ':' to define code blocks inside if statements.",
+        quiz: {
+          question: "What symbol indicates the start of an if block in Python?",
+          options: [":", ";", "{", "()"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson4",
+        title: "Loops: For and While",
+        description: "Learn to repeat actions with for and while loops.",
+        starterCode: `# Print numbers 0 to 4\nfor i in range(5):\n    print(i)`,
+        hint: "range(n) generates numbers from 0 to n-1.",
+        quiz: {
+          question: "Which keyword starts a loop that repeats until a condition is False?",
+          options: ["for", "while", "loop", "repeat"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson5",
+        title: "Functions and Parameters",
+        description: "Create reusable code with functions and pass inputs as parameters.",
+        starterCode: `# Define and call a function\ndef greet(name):\n    print(f"Hello, {name}!")\ngreet("Agastya")`,
+        hint: "Use def keyword and parentheses to define functions.",
+        quiz: {
+          question: "How do you call a function named 'foo' with argument 'bar'?",
+          options: ["foo.bar()", "call foo(bar)", "foo(bar)", "call(foo, bar)"],
+          correctIndex: 2,
+        }
+      },
+      {
+        id: "lesson6",
+        title: "Lists and List Operations",
+        description: "Explore lists, a versatile data structure for storing sequences.",
+        starterCode: `# Create and modify a list\nfruits = ["apple", "banana"]\nfruits.append("orange")\nprint(fruits)`,
+        hint: "Use append() to add items to a list.",
+        quiz: {
+          question: "Which method adds an item to the end of a list?",
+          options: ["insert()", "append()", "extend()", "add()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson7",
+        title: "Tuples and Immutability",
+        description: "Learn about tuples, immutable sequences in Python.",
+        starterCode: `# Create a tuple\ncoords = (10, 20)\nprint(coords[0])`,
+        hint: "Tuples use parentheses and cannot be modified after creation.",
+        quiz: {
+          question: "Can you modify a tuple after creation?",
+          options: ["Yes", "No", "Only with append()", "Only with extend()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson8",
+        title: "Dictionaries",
+        description: "Use dictionaries to store key-value pairs.",
+        starterCode: `# Create a dictionary\nperson = {"name": "Alex", "age": 25}\nprint(person["name"])`,
+        hint: "Access dictionary values using keys in square brackets.",
+        quiz: {
+          question: "How do you access a dictionary value?",
+          options: ["dict.value()", "dict[key]", "dict.getValue()", "dict->key"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson9",
+        title: "Sets and Set Operations",
+        description: "Learn about sets for storing unique elements and performing set operations.",
+        starterCode: `# Create sets and perform union\nset1 = {1, 2, 3}\nset2 = {3, 4, 5}\nprint(set1 | set2)`,
+        hint: "Use | for union, & for intersection, - for difference.",
+        quiz: {
+          question: "Which operator performs a set union?",
+          options: ["&", "|", "-", "^"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson10",
+        title: "List Comprehensions",
+        description: "Create lists concisely using list comprehensions.",
+        starterCode: `# Create a list of squares\nsquares = [x**2 for x in range(5)]\nprint(squares)`,
+        hint: "List comprehensions combine loops and expressions in a single line.",
+        quiz: {
+          question: "What does [x*2 for x in range(3)] produce?",
+          options: ["[0, 2, 4]", "[1, 2, 3]", "[0, 1, 2]", "[2, 4, 6]"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson11",
+        title: "String Methods",
+        description: "Manipulate strings with built-in methods.",
+        starterCode: `# Use string methods\ntext = "Hello, Python!"\nprint(text.upper())`,
+        hint: "Common string methods include upper(), lower(), and split().",
+        quiz: {
+          question: "Which method converts a string to uppercase?",
+          options: ["capitalize()", "upper()", "title()", "toUpper()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson12",
+        title: "File Input/Output",
+        description: "Read from and write to files using Python.",
+        starterCode: `# Write to a file\nwith open("output.txt", "w") as f:\n    f.write("Hello, File!")`,
+        hint: "Use 'with' statement to safely handle file operations.",
+        quiz: {
+          question: "What mode opens a file for writing?",
+          options: ["r", "w", "a", "r+"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson13",
+        title: "Exception Handling",
+        description: "Handle errors gracefully with try-except blocks.",
+        starterCode: `# Handle division by zero\ntry:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print("Cannot divide by zero!")`,
+        hint: "Use try-except to catch specific exceptions.",
+        quiz: {
+          question: "Which keyword is used to catch exceptions?",
+          options: ["catch", "except", "try", "handle"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson14",
+        title: "Modules and Imports",
+        description: "Organize code using modules and import statements.",
+        starterCode: `# Import math module\nimport math\nprint(math.sqrt(16))`,
+        hint: "Use import to access functions from other modules.",
+        quiz: {
+          question: "How do you import a module named 'math'?",
+          options: ["include math", "import math", "use math", "require math"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson15",
+        title: "Object-Oriented Programming: Classes",
+        description: "Define classes to create objects with attributes and methods.",
+        starterCode: `# Define a class\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n    def bark(self):\n        print(f"{self.name} says Woof!")`,
+        hint: "Use __init__ to initialize object attributes.",
+        quiz: {
+          question: "What method initializes a class instance?",
+          options: ["__init__", "__new__", "__create__", "__start__"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson16",
+        title: "Inheritance",
+        description: "Extend classes using inheritance to share behavior.",
+        starterCode: `# Create a subclass\nclass Animal:\n    def speak(self):\n        pass\nclass Cat(Animal):\n    def speak(self):\n        print("Meow!")`,
+        hint: "Inherit by placing the parent class in parentheses.",
+        quiz: {
+          question: "How do you indicate a class inherits from another?",
+          options: ["extends", ":", "()", "->"],
+          correctIndex: 2,
+        }
+      },
+      {
+        id: "lesson17",
+        title: "Polymorphism",
+        description: "Use polymorphism to allow different classes to share method names.",
+        starterCode: `# Demonstrate polymorphism\nclass Bird:\n    def speak(self):\n        return "Chirp"\nclass Dog:\n    def speak(self):\n        return "Woof"\nanimals = [Bird(), Dog()]\nfor a in animals:\n    print(a.speak())`,
+        hint: "Polymorphism allows different classes to use the same method name.",
+        quiz: {
+          question: "What allows different classes to use the same method name?",
+          options: ["Inheritance", "Polymorphism", "Encapsulation", "Abstraction"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson18",
+        title: "Encapsulation",
+        description: "Use encapsulation to protect object data.",
+        starterCode: `# Use private attributes\nclass BankAccount:\n    def __init__(self):\n        self.__balance = 0\n    def deposit(self, amount):\n        self.__balance += amount`,
+        hint: "Use double underscores (__) to make attributes private.",
+        quiz: {
+          question: "How do you denote a private attribute?",
+          options: ["_", "__", "#", "$"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson19",
+        title: "Lambda Functions",
+        description: "Create anonymous functions using lambda expressions.",
+        starterCode: `# Define a lambda function\nsquare = lambda x: x**2\nprint(square(5))`,
+        hint: "Lambda functions are defined with 'lambda arguments: expression'.",
+        quiz: {
+          question: "What keyword defines an anonymous function?",
+          options: ["def", "lambda", "func", "anon"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson20",
+        title: "Map and Filter",
+        description: "Use map() and filter() to process iterables.",
+        starterCode: `# Use map and filter\nnumbers = [1, 2, 3, 4]\nsquares = list(map(lambda x: x**2, numbers))\nprint(squares)`,
+        hint: "map() applies a function to each item; filter() selects items.",
+        quiz: {
+          question: "What does map() do?",
+          options: ["Filters items", "Applies a function to items", "Sorts a list", "Joins items"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson21",
+        title: "List Slicing",
+        description: "Access parts of lists using slicing techniques.",
+        starterCode: `# Slice a list\nnumbers = [0, 1, 2, 3, 4]\nprint(numbers[1:4])`,
+        hint: "Use [start:end:step] for slicing.",
+        quiz: {
+          question: "What does numbers[1:3] return for numbers=[0,1,2,3,4]?",
+          options: ["[1,2]", "[0,1]", "[1,2,3]", "[2,3]"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson22",
+        title: "Regular Expressions",
+        description: "Use the re module for pattern matching in strings.",
+        starterCode: `# Find emails\nimport re\ntext = "Contact: user@domain.com"\nprint(re.findall(r"\\w+@\\w+\\.\\w+", text))`,
+        hint: "Use re.findall() to find all matches of a pattern.",
+        quiz: {
+          question: "Which module handles regular expressions?",
+          options: ["regex", "re", "pattern", "match"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson23",
+        title: "Working with Dates",
+        description: "Use the datetime module to handle dates and times.",
+        starterCode: `# Get current date\nimport datetime\nprint(datetime.datetime.now())`,
+        hint: "datetime.now() returns the current date and time.",
+        quiz: {
+          question: "What module handles dates in Python?",
+          options: ["time", "datetime", "date", "calendar"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson24",
+        title: "Iterators and Generators",
+        description: "Create custom iterators and generators for efficient looping.",
+        starterCode: `# Define a generator\ndef fibonacci(n):\n    a, b = 0, 1\n    for _ in range(n):\n        yield a\n        a, b = b, a + b\nprint(list(fibonacci(5)))`,
+        hint: "Use yield to create a generator.",
+        quiz: {
+          question: "What keyword creates a generator?",
+          options: ["return", "yield", "next", "generate"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson25",
+        title: "Decorators",
+        description: "Modify function behavior using decorators.",
+        starterCode: `# Define a decorator\ndef debug(func):\n    def wrapper():\n        print(f"Calling {func.__name__}")\n        func()\n    return wrapper\n@debug\ndef say_hello():\n    print("Hello!")\nsay_hello()`,
+        hint: "Use @decorator_name to apply a decorator.",
+        quiz: {
+          question: "What symbol is used to apply a decorator?",
+          options: ["#", "@", "&", "$"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson26",
+        title: "Context Managers",
+        description: "Manage resources using context managers and the with statement.",
+        starterCode: `# Custom context manager\nclass Resource:\n    def __enter__(self):\n        print("Resource acquired")\n        return self\n    def __exit__(self, *args):\n        print("Resource released")\nwith Resource() as r:\n    print("Using resource")`,
+        hint: "Define __enter__ and __exit__ for custom context managers.",
+        quiz: {
+          question: "Which method is called when entering a with block?",
+          options: ["__init__", "__enter__", "__exit__", "__start__"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson27",
+        title: "Working with JSON",
+        description: "Parse and generate JSON data using the json module.",
+        starterCode: `# Work with JSON\nimport json\ndata = {"name": "Alice", "age": 30}\nprint(json.dumps(data))`,
+        hint: "Use json.dumps() to convert to JSON string, json.loads() to parse.",
+        quiz: {
+          question: "What function converts a dictionary to a JSON string?",
+          options: ["json.dump()", "json.dumps()", "json.load()", "json.loads()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson28",
+        title: "Unit Testing with unittest",
+        description: "Write unit tests to verify code functionality.",
+        starterCode: `# Write a unit test\nimport unittest\nclass TestMath(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(1 + 1, 2)\nif __name__ == "__main__":\n    unittest.main()`,
+        hint: "Use assert methods like assertEqual() in unittest.TestCase.",
+        quiz: {
+          question: "Which class is used for unit tests in unittest?",
+          options: ["Test", "TestCase", "UnitTest", "TestSuite"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson29",
+        title: "Working with CSV Files",
+        description: "Read and write CSV files using the csv module.",
+        starterCode: `# Write to CSV\nimport csv\nwith open("data.csv", "w", newline="") as f:\n    writer = csv.writer(f)\n    writer.writerow(["Name", "Age"])\n    writer.writerow(["Alice", 25])`,
+        hint: "Use csv.writer() to write rows to a CSV file.",
+        quiz: {
+          question: "What module handles CSV files?",
+          options: ["csv", "pandas", "file", "data"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson30",
+        title: "Functional Programming",
+        description: "Explore functional programming concepts like first-class functions.",
+        starterCode: `# Use first-class functions\ndef apply_func(func, x):\n    return func(x)\nprint(apply_func(lambda x: x*2, 5))`,
+        hint: "Functions can be passed as arguments in Python.",
+        quiz: {
+          question: "What is a first-class function?",
+          options: ["A function with parameters", "A function passed as an argument", "A function with a return", "A lambda function"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson31",
+        title: "Working with Paths",
+        description: "Use the pathlib module to handle file paths.",
+        starterCode: `# Use pathlib\nfrom pathlib import Path\npath = Path("example.txt")\nprint(path.name)`,
+        hint: "Path objects simplify file path operations.",
+        quiz: {
+          question: "What module provides modern file path handling?",
+          options: ["os", "pathlib", "sys", "file"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson32",
+        title: "Regular Expressions Advanced",
+        description: "Use advanced regex patterns for complex matching.",
+        starterCode: `# Use named groups\nimport re\ntext = "Date: 2023-10-01"\nmatch = re.match(r"Date: (?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2})", text)\nprint(match.group("year"))`,
+        hint: "Named groups use (?P<name>pattern) syntax.",
+        quiz: {
+          question: "How do you name a regex group?",
+          options: ["(name:pattern)", "(?P<name>pattern)", "[name:pattern]", "{name:pattern}"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson33",
+        title: "Multithreading",
+        description: "Use threading for concurrent execution.",
+        starterCode: `# Simple threading example\nimport threading\ndef task():\n    print("Task running")\nt = threading.Thread(target=task)\nt.start()\nt.join()`,
+        hint: "Use threading.Thread to run tasks concurrently.",
+        quiz: {
+          question: "What method waits for a thread to finish?",
+          options: ["wait()", "join()", "end()", "stop()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson34",
+        title: "Multiprocessing",
+        description: "Use multiprocessing for parallel execution.",
+        starterCode: `# Simple multiprocessing example\nfrom multiprocessing import Process\ndef task():\n    print("Process running")\np = Process(target=task)\np.start()\np.join()`,
+        hint: "Processes run in separate memory spaces.",
+        quiz: {
+          question: "What is a key difference between threading and multiprocessing?",
+          options: ["Threading uses less memory", "Multiprocessing uses separate memory", "Threading is faster", "Multiprocessing is single-threaded"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson35",
+        title: "Asyncio Basics",
+        description: "Use asyncio for asynchronous programming.",
+        starterCode: `# Simple asyncio example\nimport asyncio\nasync def say_hello():\n    print("Hello")\n    await asyncio.sleep(1)\n    print("World")\nasyncio.run(say_hello())`,
+        hint: "Use async def for coroutines and await for asynchronous calls.",
+        quiz: {
+          question: "What keyword defines an asynchronous function?",
+          options: ["async", "await", "coroutine", "asyncrun"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson36",
+        title: "Working with Databases",
+        description: "Use sqlite3 to interact with databases.",
+        starterCode: `# Connect to SQLite\nimport sqlite3\nconn = sqlite3.connect(":memory:")\nc = conn.cursor()\nc.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)")`,
+        hint: "Use sqlite3.connect() to connect to a database.",
+        quiz: {
+          question: "What module provides SQLite support?",
+          options: ["sql", "sqlite3", "database", "pysql"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson37",
+        title: "Itertools Module",
+        description: "Use itertools for advanced iterator operations.",
+        starterCode: `# Use itertools\nimport itertools\nprint(list(itertools.permutations([1, 2, 3], 2)))`,
+        hint: "itertools provides functions like permutations() and combinations().",
+        quiz: {
+          question: "What does itertools.combinations() return?",
+          options: ["Permutations", "Combinations", "Pairs", "Groups"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson38",
+        title: "Collections Module",
+        description: "Use specialized data structures from collections.",
+        starterCode: `# Use Counter\nfrom collections import Counter\nprint(Counter("hello"))`,
+        hint: "Counter counts hashable objects.",
+        quiz: {
+          question: "What does Counter do?",
+          options: ["Sorts items", "Counts items", "Groups items", "Filters items"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson39",
+        title: "Logging",
+        description: "Use the logging module for debugging and monitoring.",
+        starterCode: `# Basic logging\nimport logging\nlogging.basicConfig(level=logging.INFO)\nlogging.info("This is an info message")`,
+        hint: "Set logging levels like DEBUG, INFO, WARNING.",
+        quiz: {
+          question: "What is the default logging level?",
+          options: ["DEBUG", "INFO", "WARNING", "ERROR"],
+          correctIndex: 2,
+        }
+      },
+      {
+        id: "lesson40",
+        title: "Argparse for CLI",
+        description: "Create command-line interfaces with argparse.",
+        starterCode: `# Simple CLI\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument("--name")\nargs = parser.parse_args()\nprint(args.name)`,
+        hint: "Use add_argument() to define CLI arguments.",
+        quiz: {
+          question: "What method parses CLI arguments?",
+          options: ["parse_args()", "get_args()", "read_args()", "run_args()"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson41",
+        title: "Working with APIs",
+        description: "Make HTTP requests using the requests module.",
+        starterCode: `# Make a GET request\nimport requests\nresponse = requests.get("https://api.github.com")\nprint(response.status_code)`,
+        hint: "Use requests.get() to fetch data from APIs.",
+        quiz: {
+          question: "What module is used for HTTP requests?",
+          options: ["http", "requests", "urllib", "fetch"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson42",
+        title: "Web Scraping with BeautifulSoup",
+        description: "Scrape web pages using BeautifulSoup.",
+        starterCode: `# Simple web scraping\nfrom bs4 import BeautifulSoup\nimport requests\nhtml = requests.get("https://example.com").text\nsoup = BeautifulSoup(html, "html.parser")\nprint(soup.title.text)`,
+        hint: "Use BeautifulSoup to parse HTML content.",
+        quiz: {
+          question: "What does BeautifulSoup parse?",
+          options: ["JSON", "XML", "HTML", "CSV"],
+          correctIndex: 2,
+        }
+      },
+      {
+        id: "lesson43",
+        title: "Data Analysis with Pandas",
+        description: "Analyze data using the pandas library.",
+        starterCode: `# Create a DataFrame\nimport pandas as pd\ndata = {"name": ["Alice", "Bob"], "age": [25, 30]}\ndf = pd.DataFrame(data)\nprint(df)`,
+        hint: "DataFrame is the primary data structure in pandas.",
+        quiz: {
+          question: "What is the main data structure in pandas?",
+          options: ["Series", "DataFrame", "Table", "Matrix"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson44",
+        title: "Data Visualization with Matplotlib",
+        description: "Create plots using the matplotlib library.",
+        starterCode: `# Simple plot\nimport matplotlib.pyplot as plt\nplt.plot([1, 2, 3], [4, 5, 6])\nplt.show()`,
+        hint: "Use plt.plot() to create line plots.",
+        quiz: {
+          question: "What function creates a line plot in matplotlib?",
+          options: ["plt.draw()", "plt.plot()", "plt.line()", "plt.graph()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson45",
+        title: "NumPy Arrays",
+        description: "Perform numerical operations with NumPy arrays.",
+        starterCode: `# Create a NumPy array\nimport numpy as np\narr = np.array([1, 2, 3])\nprint(arr * 2)`,
+        hint: "NumPy arrays support vectorized operations.",
+        quiz: {
+          question: "What does NumPy provide?",
+          options: ["Lists", "Arrays", "Dictionaries", "Sets"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson46",
+        title: "Working with Time Zones",
+        description: "Handle time zones using the pytz module.",
+        starterCode: `# Use time zones\nimport datetime, pytz\ntime = datetime.datetime.now(pytz.UTC)\nprint(time)`,
+        hint: "Use pytz.UTC for UTC time zone.",
+        quiz: {
+          question: "What module handles time zones?",
+          options: ["time", "datetime", "pytz", "zone"],
+          correctIndex: 2,
+        }
+      },
+      {
+        id: "lesson47",
+        title: "Random Module",
+        description: "Generate random numbers and selections.",
+        starterCode: `# Generate random number\nimport random\nprint(random.randint(1, 10))`,
+        hint: "Use randint() for random integers.",
+        quiz: {
+          question: "What function generates a random integer?",
+          options: ["random()", "randint()", "choice()", "shuffle()"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson48",
+        title: "OS Module",
+        description: "Interact with the operating system using the os module.",
+        starterCode: `# List directory contents\nimport os\nprint(os.listdir("."))`,
+        hint: "Use os.listdir() to get directory contents.",
+        quiz: {
+          question: "What does os.listdir() return?",
+          options: ["File contents", "Directory contents", "File paths", "System info"],
+          correctIndex: 1,
+        }
+      },
+      {
+        id: "lesson49",
+        title: "Sys Module",
+        description: "Use the sys module for system-specific parameters.",
+        starterCode: `# Get Python version\nimport sys\nprint(sys.version)`,
+        hint: "sys.version provides Python version info.",
+        quiz: {
+          question: "What does sys.exit() do?",
+          options: ["Exits the program", "Prints system info", "Changes directory", "Imports a module"],
+          correctIndex: 0,
+        }
+      },
+      {
+        id: "lesson50",
+        title: "Virtual Environments",
+        description: "Use virtualenv to manage project dependencies.",
+        starterCode: `# Example command (not executable here)\n# python -m venv myenv\n# source myenv/bin/activate (Linux/Mac)\n# myenv\\Scripts\\activate (Windows)\nprint("Virtual environment activated")`,
+        hint: "Virtual environments isolate project dependencies.",
+        quiz: {
+          question: "What module creates virtual environments?",
+          options: ["venv", "virtual", "env", "pip"],
+          correctIndex: 0,
+        }
+      }
+    ];
+    // ------------------------
+    // State and Persistence
+    // ------------------------
+    const LS_DARK_MODE = "advPython_darkMode";
+    const LS_COMPLETED = "advPython_completedLessons";
+    const LS_NOTES_PREFIX = "advPython_notes_";
+    const LS_QUIZ_PREFIX = "advPython_quiz_";
+    const LS_POINTS = "advPython_points";
+    const LS_STREAK = "advPython_streak";
+    const LS_LAST_ACTIVE = "advPython_lastActive";
+    const LS_TIME_SPENT = "advPython_timeSpent";
+    const LS_DAILY_GOAL = "advPython_dailyGoal";
+    const LS_DAILY_COMPLETED = "advPython_dailyCompleted";
+    let currentLessonIndex = 0;
+    let completedLessons = new Set(JSON.parse(localStorage.getItem(LS_COMPLETED)) || []);
+    let userPoints = parseInt(localStorage.getItem(LS_POINTS)) || 0;
+    let badges = new Set(JSON.parse(localStorage.getItem("advPython_badges")) || []);
+    let streak = parseInt(localStorage.getItem(LS_STREAK)) || 0;
+    let lastActive = localStorage.getItem(LS_LAST_ACTIVE) || null;
+    let timeSpent = JSON.parse(localStorage.getItem(LS_TIME_SPENT)) || {};
+    let dailyGoal = parseInt(localStorage.getItem(LS_DAILY_GOAL)) || 2;
+    let dailyCompleted = parseInt(localStorage.getItem(LS_DAILY_COMPLETED)) || 0;
+    let lessonStartTime = null;
+    // ------------------------
+    // DOM Elements
+    // ------------------------
+    const lessonNav = document.getElementById("lessonNav");
+    const courseContent = document.getElementById("courseContent");
+    const lessonTitle = document.getElementById("lessonTitle");
+    const lessonDescription = document.getElementById("lessonDescription");
+    const codeInput = document.getElementById("code-input");
+    const outputConsole = document.getElementById("output-console");
+    const runCodeBtn = document.getElementById("runCodeBtn");
+    const formatCodeBtn = document.getElementById("formatCodeBtn");
+    const copyCodeBtn = document.getElementById("copyCodeBtn");
+    const downloadCodeBtn = document.getElementById("downloadCodeBtn");
+    const resetCodeBtn = document.getElementById("resetCodeBtn");
+    const showHintBtn = document.getElementById("showHintBtn");
+    const hintArea = document.getElementById("hintArea");
+    const quizQuestion = document.getElementById("quizQuestion");
+    const quizOptions = document.getElementById("quizOptions");
+    const quizResult = document.getElementById("quizResult");
+    const resetQuizBtn = document.getElementById("resetQuizBtn");
+    const lessonNotes = document.getElementById("lessonNotes");
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const badgeContainer = document.getElementById("badgeContainer");
+    const pointsDisplay = document.getElementById("pointsDisplay");
+    const streakDisplay = document.getElementById("streakDisplay");
+    const goalDisplay = document.getElementById("goalDisplay");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const motivationMessage = document.getElementById("motivationMessage");
+    const leaderboardTable = document.getElementById("leaderboardTable").querySelector("tbody");
+    const prevLessonBtn = document.getElementById("prevLessonBtn");
+    const nextLessonBtn = document.getElementById("nextLessonBtn");
+    const markCompleteBtn = document.getElementById("markCompleteBtn");
+    // ------------------------
+    // Helper Functions
+    // ------------------------
+    function saveCompleted() {
+      localStorage.setItem(LS_COMPLETED, JSON.stringify(Array.from(completedLessons)));
+    }
+    function saveNotes(id, text) {
+      localStorage.setItem(LS_NOTES_PREFIX + id, text);
+    }
+    function loadNotes(id) {
+      return localStorage.getItem(LS_NOTES_PREFIX + id) || "";
+    }
+    function saveQuizAnswer(lessonId, answerIndex) {
+      localStorage.setItem(LS_QUIZ_PREFIX + lessonId, answerIndex);
+    }
+    function loadQuizAnswer(lessonId) {
+      const val = localStorage.getItem(LS_QUIZ_PREFIX + lessonId);
+      return val !== null ? Number(val) : null;
+    }
+    function savePoints() {
+      localStorage.setItem(LS_POINTS, userPoints.toString());
+      pointsDisplay.textContent = `Points: ${userPoints}`;
+    }
+    function saveStreak() {
+      localStorage.setItem(LS_STREAK, streak.toString());
+      streakDisplay.textContent = `Streak: ${streak} days`;
+    }
+    function saveLastActive() {
+      localStorage.setItem(LS_LAST_ACTIVE, new Date().toISOString().split('T')[0]);
+    }
+    function saveTimeSpent() {
+      localStorage.setItem(LS_TIME_SPENT, JSON.stringify(timeSpent));
+      updateTimeDisplay();
+    }
+    function saveDailyGoal() {
+      localStorage.setItem(LS_DAILY_GOAL, dailyGoal.toString());
+    }
+    function saveDailyCompleted() {
+      localStorage.setItem(LS_DAILY_COMPLETED, dailyCompleted.toString());
+      goalDisplay.textContent = `Daily Goal: ${dailyCompleted}/${dailyGoal} lessons`;
+    }
+    function updateProgress() {
+      const completedCount = completedLessons.size;
+      const total = lessons.length;
+      const percent = (completedCount / total) * 100;
+      progressBar.style.width = percent + "%";
+      progressText.textContent = `Progress: ${completedCount} / ${total} lessons completed`;
+      progressBar.setAttribute("aria-valuenow", completedCount);
+      progressBar.setAttribute("aria-valuemin", 0);
+      progressBar.setAttribute("aria-valuemax", total);
+    }
+    function updateTimeDisplay() {
+      const today = new Date().toISOString().split('T')[0];
+      const minutesToday = Math.floor((timeSpent[today] || 0) / 60);
+      timeDisplay.textContent = `Time Today: ${minutesToday} min`;
+    }
+    function renderBadges() {
+      badgeContainer.innerHTML = "";
+      if (badges.size === 0) {
+        badgeContainer.textContent = "No badges earned yet.";
+        return;
+      }
+      badges.forEach(badge => {
+        const span = document.createElement("span");
+        span.className = "badge";
+        span.title = badge;
+        span.setAttribute("tabindex", "0");
+        span.textContent = "🏅 " + badge;
+        badgeContainer.appendChild(span);
+      });
+    }
+    function tryAwardBadges() {
+      const completedCount = completedLessons.size;
+      if (completedCount >= 1 && !badges.has("First Lesson Completed")) {
+        badges.add("First Lesson Completed");
+        showMotivation("🎉 First Lesson Completed! You're on your way!");
+        triggerConfetti();
+      }
+      if (completedCount >= 10 && !badges.has("Python Novice")) {
+        badges.add("Python Novice");
+        showMotivation("🏅 Python Novice! Keep coding!");
+        triggerConfetti();
+      }
+      if (completedCount >= Math.floor(lessons.length / 2) && !badges.has("Halfway There")) {
+        badges.add("Halfway There");
+        showMotivation("🏅 Halfway There! You're crushing it!");
+        triggerConfetti();
+      }
+      if (completedCount === lessons.length && !badges.has("Python Pro")) {
+        badges.add("Python Pro");
+        showMotivation("🏅 Python Pro! Master coder achieved!");
+        triggerConfetti();
+      }
+      if (userPoints >= 100 && !badges.has("Point Collector")) {
+        badges.add("Point Collector");
+        showMotivation("🏅 Point Collector! 100 points earned!");
+        triggerConfetti();
+      }
+      if (streak >= 3 && !badges.has("Streak Starter")) {
+        badges.add("Streak Starter");
+        showMotivation("🔥 Streak Starter! 3 days in a row!");
+        triggerConfetti();
+      }
+      localStorage.setItem("advPython_badges", JSON.stringify(Array.from(badges)));
+      renderBadges();
+    }
+    function showMotivation(message) {
+      motivationMessage.textContent = message;
+      setTimeout(() => motivationMessage.textContent = "", 3000);
+    }
+    function triggerConfetti() {
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement("div");
+        confetti.className = "confetti";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.background = ["#f00", "#0f0", "#00f", "#ff0"][Math.floor(Math.random() * 4)];
+        confetti.style.animationDelay = Math.random() * 0.5 + "s";
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 2000);
+      }
+    }
+    function updateStreak() {
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      if (!lastActive) {
+        streak = 1;
+      } else if (lastActive === yesterday) {
+        streak++;
+      } else if (lastActive !== today) {
+        streak = 1;
+      }
+      saveLastActive();
+      saveStreak();
+    }
+    function trackTime() {
+      if (lessonStartTime) {
+        const timeDiff = (Date.now() - lessonStartTime) / 1000;
+        const today = new Date().toISOString().split('T')[0];
+        timeSpent[today] = (timeSpent[today] || 0) + timeDiff;
+        saveTimeSpent();
+      }
+      lessonStartTime = Date.now();
+    }
+    function checkDailyGoal() {
+      const today = new Date().toISOString().split('T')[0];
+      const lastCompletedDate = localStorage.getItem(LS_LAST_ACTIVE) || today;
+      if (lastCompletedDate !== today) {
+        dailyCompleted = 0;
+        saveDailyCompleted();
+      }
+      if (dailyCompleted >= dailyGoal) {
+        showMotivation("🎯 Daily Goal Achieved! +50 Bonus Points!");
+        addPoints(50);
+        triggerConfetti();
+      }
+    }
+    function renderLeaderboard() {
+      const mockLeaderboard = [
+        { name: "CodeMaster", points: 1500 },
+        { name: "PythonGuru", points: 1200 },
+        { name: "You", points: userPoints },
+        { name: "ScriptWizard", points: 800 },
+        { name: "ByteBlaster", points: 500 }
+      ].sort((a, b) => b.points - a.points);
+      leaderboardTable.innerHTML = "";
+      mockLeaderboard.forEach((entry, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${index + 1}</td><td>${entry.name}</td><td>${entry.points}</td>`;
+        leaderboardTable.appendChild(row);
+      });
+    }
+    function sanitize(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    function formatCode(code) {
+      return code.replace(/\t/g, "    ").trimEnd();
+    }
+    function updateNavButtons() {
+      prevLessonBtn.disabled = currentLessonIndex === 0;
+      nextLessonBtn.disabled = currentLessonIndex === lessons.length - 1;
+    }
+    function focusNavButton(index) {
+      const btn = document.getElementById("lesson-btn-" + lessons[index].id);
+      if (btn) btn.focus();
+    }
+    // ------------------------
+    // Load Lesson Content
+    // ------------------------
+    function loadLesson(index) {
+      trackTime();
+      if (index < 0 || index >= lessons.length) return;
+      currentLessonIndex = index;
+      const lesson = lessons[index];
+      lessonTitle.textContent = lesson.title;
+      lessonDescription.textContent = lesson.description;
+      codeInput.value = lesson.starterCode;
+      outputConsole.textContent = "";
+      hintArea.style.display = "none";
+      showHintBtn.setAttribute("aria-pressed", "false");
+      quizResult.textContent = "";
+      resetQuizBtn.style.display = "none";
+      lessonNotes.value = loadNotes(lesson.id);
+      if (lesson.quiz) {
+        quizQuestion.textContent = lesson.quiz.question;
+        quizOptions.innerHTML = "";
+        lesson.quiz.options.forEach((opt, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = opt;
+          btn.setAttribute("role", "radio");
+          btn.setAttribute("aria-checked", "false");
+          btn.dataset.index = idx;
+          btn.tabIndex = 0;
+          btn.addEventListener("click", () => selectQuizOption(idx));
+          quizOptions.appendChild(btn);
+        });
+        const savedAnswer = loadQuizAnswer(lesson.id);
+        if (savedAnswer !== null) {
+          selectQuizOption(savedAnswer, true);
+        }
+      } else {
+        quizQuestion.textContent = "";
+        quizOptions.innerHTML = "";
+        quizResult.textContent = "";
+        resetQuizBtn.style.display = "none";
+      }
+      updateNavButtons();
+      updateMarkCompleteButton();
+      Array.from(lessonNav.querySelectorAll("button.lesson-btn")).forEach((btn, i) => {
+        btn.classList.toggle("active", i === index);
+      });
+      const activeBtn = document.getElementById("lesson-btn-" + lesson.id);
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+      updateProgress();
+      renderBadges();
+      renderLeaderboard();
+    }
+    // ------------------------
+    // Quiz Interaction
+    // ------------------------
+    let currentQuizAnswered = false;
+    function selectQuizOption(selectedIndex, loading = false) {
+      if (currentQuizAnswered && !loading) return;
+      currentQuizAnswered = true;
+      const lesson = lessons[currentLessonIndex];
+      const correctIndex = lesson.quiz.correctIndex;
+      Array.from(quizOptions.children).forEach((btn, idx) => {
+        btn.setAttribute("aria-checked", idx === selectedIndex ? "true" : "false");
+        btn.disabled = true;
+        btn.style.backgroundColor = "";
+        if (idx === selectedIndex) {
+          if (idx === correctIndex) {
+            btn.style.backgroundColor = "#0a0";
+            quizResult.textContent = "Correct! 🎉 +10 points";
+            quizResult.className = "quiz-result correct";
+            addPoints(10);
+            showMotivation("Nice work on the quiz! Keep it up!");
+            if (!badges.has("Quiz Master")) {
+              badges.add("Quiz Master");
+              showMotivation("🏅 Quiz Master earned!");
+              triggerConfetti();
+              localStorage.setItem("advPython_badges", JSON.stringify(Array.from(badges)));
+              renderBadges();
+            }
+          } else {
+            btn.style.backgroundColor = "#a00";
+            quizResult.textContent = `Incorrect. The correct answer is "${lesson.quiz.options[correctIndex]}".`;
+            quizResult.className = "quiz-result incorrect";
+          }
+        }
+      });
+      saveQuizAnswer(lesson.id, selectedIndex);
+      resetQuizBtn.style.display = "inline-block";
+    }
+    resetQuizBtn.onclick = () => {
+      currentQuizAnswered = false;
+      quizResult.textContent = "";
+      resetQuizBtn.style.display = "none";
+      Array.from(quizOptions.children).forEach(btn => {
+        btn.disabled = false;
+        btn.style.backgroundColor = "";
+        btn.setAttribute("aria-checked", "false");
+      });
+      localStorage.removeItem(LS_QUIZ_PREFIX + lessons[currentLessonIndex].id);
+    };
+    // ------------------------
+    // Points and Badges
+    // ------------------------
+    function addPoints(points) {
+      userPoints += points;
+      savePoints();
+      tryAwardBadges();
+      renderLeaderboard();
+    }
+    // ------------------------
+    // Code Editor Controls
+    // ------------------------
+    runCodeBtn.onclick = () => {
+      runCode();
+      addPoints(5);
+      showMotivation("Code executed! +5 points!");
+      if (!badges.has("Code Runner")) {
+        badges.add("Code Runner");
+        showMotivation("🏅 Code Runner earned!");
+        triggerConfetti();
+        localStorage.setItem("advPython_badges", JSON.stringify(Array.from(badges)));
+        renderBadges();
+      }
+    };
+    formatCodeBtn.onclick = () => {
+      codeInput.value = formatCode(codeInput.value);
+      codeInput.focus();
+    };
+    copyCodeBtn.onclick = () => {
+      navigator.clipboard.writeText(codeInput.value).then(() => {
+        alert("Code copied to clipboard!");
+      }).catch(() => alert("Failed to copy."));
+    };
+    downloadCodeBtn.onclick = () => {
+      const blob = new Blob([codeInput.value], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `lesson${currentLessonIndex + 1}_code.py`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    resetCodeBtn.onclick = () => {
+      const lesson = lessons[currentLessonIndex];
+      if (confirm("Reset code to original starter code? This will lose your current changes.")) {
+        codeInput.value = lesson.starterCode;
+        outputConsole.textContent = "";
+      }
+    };
+    showHintBtn.onclick = () => {
+      if (hintArea.style.display === "none") {
+        hintArea.textContent = lessons[currentLessonIndex].hint || "No hint available.";
+        hintArea.style.display = "block";
+        showHintBtn.setAttribute("aria-pressed", "true");
+      } else {
+        hintArea.style.display = "none";
+        showHintBtn.setAttribute("aria-pressed", "false");
+      }
+    };
+    // ------------------------
+    // Run Code (Piston API)
+    // ------------------------
+    async function runCode() {
+      const code = codeInput.value.trim();
+      if (!code) {
+        outputConsole.textContent = "Error: No code to run.";
+        outputConsole.style.color = "#f44";
+        return;
+      }
+      outputConsole.textContent = "Running...";
+      outputConsole.style.color = "#0f0";
+      try {
+        const res = await fetch("https://emkc.org/api/v2/piston/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            language: "python",
+            version: "*",
+            files: [{ content: code }],
+            stdin: "",
+            args: []
+          }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(`HTTP ${res.status}: ${JSON.stringify(errorData)}`);
+        }
+        const data = await res.json();
+        const runData = data.run || {};
+        let outputText = runData.stdout || runData.output || "";
+        let errText = runData.stderr || "";
+        if (errText) {
+          outputConsole.textContent = errText.trim();
+          outputConsole.style.color = "#f44";
+        } else if (outputText) {
+          outputConsole.textContent = outputText.trim();
+          outputConsole.style.color = "#0f0";
+        } else {
+          outputConsole.textContent = "No output.";
+          outputConsole.style.color = "#888";
+        }
+      } catch (err) {
+        outputConsole.textContent = "Error running code: " + err.message;
+        outputConsole.style.color = "#f44";
+      }
+    }
+    // ------------------------
+    // Lesson Navigation
+    // ------------------------
+    function createLessonButtons() {
+      lessons.forEach((lesson, idx) => {
+        const btn = document.createElement("button");
+        btn.textContent = lesson.title;
+        btn.id = "lesson-btn-" + lesson.id;
+        btn.className = "lesson-btn";
+        if (completedLessons.has(lesson.id)) btn.classList.add("completed");
+        btn.setAttribute("aria-controls", "courseContent");
+        btn.setAttribute("role", "tab");
+        btn.tabIndex = 0;
+        btn.addEventListener("click", () => {
+          loadLesson(idx);
+          focusNavButton(idx);
+        });
+        lessonNav.insertBefore(btn, leaderboardTable.parentElement);
+      });
+    }
+    prevLessonBtn.onclick = () => {
+      if (currentLessonIndex > 0) {
+        loadLesson(currentLessonIndex - 1);
+        focusNavButton(currentLessonIndex);
+      }
+    };
+    nextLessonBtn.onclick = () => {
+      if (currentLessonIndex < lessons.length - 1) {
+        if (completedLessons.has(lessons[currentLessonIndex].id)) {
+          loadLesson(currentLessonIndex + 1);
+          focusNavButton(currentLessonIndex);
+        } else {
+          alert("Complete this lesson first to unlock the next.");
+        }
+      }
+    };
+    markCompleteBtn.onclick = () => {
+      const lesson = lessons[currentLessonIndex];
+      if (!completedLessons.has(lesson.id)) {
+        completedLessons.add(lesson.id);
+        saveCompleted();
+        markCompleteBtn.disabled = true;
+        markCompleteBtn.textContent = "✔ Completed";
+        const btn = document.getElementById("lesson-btn-" + lesson.id);
+        if (btn) btn.classList.add("completed");
+        updateProgress();
+        addPoints(20);
+        dailyCompleted++;
+        saveDailyCompleted();
+        checkDailyGoal();
+        updateStreak();
+        tryAwardBadges();
+        showMotivation("Lesson completed! +20 points!");
+        triggerConfetti();
+      }
+    };
+    function updateMarkCompleteButton() {
+      const lesson = lessons[currentLessonIndex];
+      if (completedLessons.has(lesson.id)) {
+        markCompleteBtn.disabled = true;
+        markCompleteBtn.textContent = "✔ Completed";
+      } else {
+        markCompleteBtn.disabled = false;
+        markCompleteBtn.textContent = "✔ Mark Complete";
+      }
+    }
+    lessonNotes.addEventListener("input", () => {
+      saveNotes(lessons[currentLessonIndex].id, lessonNotes.value);
+    });
+    function applyDarkMode(dark) {
+      if (dark) {
+        document.body.classList.add("dark");
+        lessonNav.classList.add("dark");
+        darkModeToggle.textContent = "☀️";
+        darkModeToggle.setAttribute("aria-label", "Switch to light mode");
+      } else {
+        document.body.classList.remove("dark");
+        lessonNav.classList.remove("dark");
+        darkModeToggle.textContent = "🌙";
+        darkModeToggle.setAttribute("aria-label", "Switch to dark mode");
+      }
+      localStorage.setItem(LS_DARK_MODE, dark ? "true" : "false");
+    }
+    darkModeToggle.onclick = () => {
+      const dark = document.body.classList.contains("dark");
+      applyDarkMode(!dark);
+    };
+    (function initDarkMode() {
+      const dark = localStorage.getItem(LS_DARK_MODE) === "true";
+      applyDarkMode(dark);
+    })();
+    document.addEventListener("keydown", (e) => {
+      if (["TEXTAREA", "INPUT"].includes(document.activeElement.tagName)) return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (currentLessonIndex < lessons.length - 1) {
+          if (completedLessons.has(lessons[currentLessonIndex].id)) {
+            loadLesson(currentLessonIndex + 1);
+            focusNavButton(currentLessonIndex);
+          } else {
+            alert("Complete this lesson first to unlock the next.");
+          }
+        }
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (currentLessonIndex > 0) {
+          loadLesson(currentLessonIndex - 1);
+          focusNavButton(currentLessonIndex);
+        }
+      } else if (e.key === "F5") {
+        e.preventDefault();
+        runCode();
+      }
+    });
+    // ------------------------
+    // Initialization
+    // ------------------------
+    function init() {
+      createLessonButtons();
+      let firstIncomplete = lessons.findIndex(lesson => !completedLessons.has(lesson.id));
+      if (firstIncomplete === -1) firstIncomplete = 0; // All completed, start at first lesson
+      loadLesson(firstIncomplete);
+      updateProgress();
+      renderLeaderboard();
+      updateStreak();
+      checkDailyGoal();
+      renderBadges();
+      updateTimeDisplay();
+      savePoints();
+      // Prompt for daily goal if not set
+      if (!localStorage.getItem(LS_DAILY_GOAL)) {
+        const goal = prompt("Set your daily lesson goal (e.g., 2):", "2");
+        dailyGoal = parseInt(goal) > 0 ? parseInt(goal) : 2;
+        saveDailyGoal();
+        goalDisplay.textContent = `Daily Goal: ${dailyCompleted}/${dailyGoal} lessons`;
+      }
+      // Start tracking time
+      lessonStartTime = Date.now();
+    }
+    // Start the application
+    init();
+  </script>
+</body>
+</html>

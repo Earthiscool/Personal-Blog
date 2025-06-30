@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Articles – Let Dreamers Dream</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    nav {
+      background: #000;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .search-bar {
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+
+    .search-bar input {
+      width: 100%;
+      max-width: 500px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      background: #333;
+      color: #fff;
+    }
+
+    .container {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .article-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      height: 220px;
+    }
+
+    .article-card:hover {
+      transform: scale(1.02);
+    }
+
+    .article-header {
+      background: #00cccc;
+      color: #000;
+      padding: 1rem;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 50%;
+    }
+
+    .article-meta {
+      padding: 1rem;
+      color: #ccc;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      height: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .article-meta span {
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #222;
+      max-width: 700px;
+      width: 90%;
+      padding: 2rem;
+      border-radius: 12px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+  <head>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+    });
+  });
+</script>
+  
+</head>
+</head>
+<body>
+  <nav>
+    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
+  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+  </nav>
+
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search articles by title..." />
+  </div>
+
+  <div class="container" id="article-list">
+    <!-- Articles will be injected here -->
+  </div>
+
+  <div class="modal" id="article-modal">
+    <div class="modal-content" id="modal-content">
+      <span class="close-btn">×</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-body"></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q',
+      authDomain: 'letdreamersdream.firebaseapp.com',
+      projectId: 'letdreamersdream',
+      storageBucket: 'letdreamersdream.appspot.com',
+      messagingSenderId: '769338292042',
+      appId: '1:769338292042:web:d12a229145acb0e575f3b3',
+      measurementId: 'G-3PEH6QWSWJ'
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const articleList = document.getElementById('article-list');
+    const closeBtn = document.querySelector('.close-btn');
+    const searchInput = document.getElementById('search-input');
+    let articles = [];
+
+    async function loadArticles() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "articles"));
+        if (querySnapshot.empty) {
+          articleList.innerHTML = '<p>No articles found.</p>';
+          return;
+        }
+
+        articles = [];
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          articles.push({ id: doc.id, ...data });
+        });
+
+        renderArticles(articles);
+      } catch (error) {
+        console.error("Failed to load articles:", error);
+        articleList.innerHTML = '<p style="color: red;">Error loading articles: ' + error.message + '</p>';
+      }
+    }
+
+    function renderArticles(articlesToDisplay) {
+      articleList.innerHTML = '';
+      if (articlesToDisplay.length === 0) {
+        articleList.innerHTML = '<p>No articles found.</p>';
+        return;
+      }
+
+      articlesToDisplay.forEach(data => {
+        const card = document.createElement("div");
+        card.className = "article-card";
+        card.innerHTML = `
+          <div class="article-header">${data.title || 'Untitled'}</div>
+          <div class="article-meta">
+            <span><strong>Author:</strong> ${data.author || 'Unknown'}</span>
+            <span><strong>Category:</strong> ${data.category || 'Uncategorized'}</span>
+            <span><strong>Read Time:</strong> ${data.readTime || 'N/A'}</span>
+          </div>
+        `;
+        card.onclick = () => openModal(data.title || 'Untitled', data.body || 'No content available');
+        articleList.appendChild(card);
+      });
+    }
+
+    function openModal(title, body) {
+      document.getElementById("modal-title").innerText = title;
+      document.getElementById("modal-body").innerText = body || 'No content available';
+      document.getElementById("article-modal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("article-modal").style.display = "none";
+    }
+
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const filteredArticles = articles.filter(article =>
+        (article.title || '').toLowerCase().includes(searchTerm)
+      );
+      renderArticles(filteredArticles);
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+
+    loadArticles();
+  </script>
+</body>
+</html>
