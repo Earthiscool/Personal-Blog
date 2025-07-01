@@ -127,6 +127,8 @@
     }
   </style>
   <head>
+<title>Projects - Let Dreamers Dream</title>
+<!-- OneSignal SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -137,6 +139,9 @@
       notifyButton: { enable: true },
       serviceWorkerParam: {
         scope: "/Personal-Blog/"
+      },
+      welcomeNotification: {
+        url: "https://earthiscool.github.io/Personal-Blog/"
       }
     });
 
@@ -160,6 +165,7 @@
     }
   });
 </script>
+
 
 
 
