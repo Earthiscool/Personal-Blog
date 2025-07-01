@@ -4,6 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Live Code Editor – Let Dreamers Dream</title>
+  <!-- Firebase Compat SDK for Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <!-- Authentication Check -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.appspot.com",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    document.body.style.display = 'none';
+    auth.onAuthStateChanged(user => {
+      if (!user || !user.emailVerified) {
+        window.location.href = 'login.html';
+      } else {
+        document.body.style.display = 'block';
+      }
+    });
+  </script>
   <style>
     body {
       margin: 0;
@@ -137,153 +161,140 @@
     }
   });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 </head>
 </head>
 <body>
- <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
+  <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
 
   <!-- Your other page content here -->
 
-
-
   <!-- ...rest of the page... -->
-<nav>
-  <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
-</nav>
-
-<div id="tabs">
-  <div class="tab active" data-tab="html">HTML/CSS/JS</div>
-  <div class="tab" data-tab="python">Python</div>
-</div>
-
-<section id="editorSection">
-  <textarea id="htmlEditor" placeholder="Write HTML, CSS, or JS code here..."></textarea>
-  <textarea id="pythonEditor" placeholder="Write Python code here..." style="display:none;"></textarea>
-
-  <div>
-    <button onclick="runCode()">Run</button>
-    <button onclick="downloadCode()">Download</button>
-    <button onclick="openNew()">Open in New Window</button>
+  <nav>
+    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
+    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+  </nav>
+  <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
+  <div id="tabs">
+    <div class="tab active" data-tab="html">HTML/CSS/JS</div>
+    <div class="tab" data-tab="python">Python</div>
   </div>
 
-  <iframe id="preview" style="display: block;"></iframe>
-  <pre id="pythonOutput" style="display: none;"></pre>
-</section>
+  <section id="editorSection">
+    <textarea id="htmlEditor" placeholder="Write HTML, CSS, or JS code here..."></textarea>
+    <textarea id="pythonEditor" placeholder="Write Python code here..." style="display:none;"></textarea>
 
-<script>
-  fetch('/api/key')
-  .then(res => res.json())
-  .then(data => {
-    console.log("Safe Google API Key:", data.key);
-    // use data.key in a map, etc.
-  });
+    <div>
+      <button onclick="runCode()">Run</button>
+      <button onclick="downloadCode()">Download</button>
+      <button onclick="openNew()">Open in New Window</button>
+    </div>
 
-  const htmlEditor = document.getElementById("htmlEditor");
-  const pythonEditor = document.getElementById("pythonEditor");
-  const preview = document.getElementById("preview");
-  const output = document.getElementById("pythonOutput");
+    <iframe id="preview" style="display: block;"></iframe>
+    <pre id="pythonOutput" style="display: none;"></pre>
+  </section>
 
-  function runCode() {
-  const activeTab = document.querySelector(".tab.active").dataset.tab;
-  if (activeTab === "html") {
-    const blob = new Blob([htmlEditor.value], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    preview.src = url;
-    preview.style.display = "block";
-    output.style.display = "none";
-  } else {
-    fetch("https://emkc.org/api/v2/piston/execute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        language: "python",
-        version: "3.10.0",
-        files: [{ name: "main.py", content: pythonEditor.value }]
-      })
-    })
+  <script>
+    fetch('/api/key')
     .then(res => res.json())
     .then(data => {
-      if (data.run) {
-        output.textContent = data.run.output || data.run.stderr || "No output.";
-      } else if (data.message) {
-        output.textContent = "Error: " + data.message;
-      } else {
-        output.textContent = "Unexpected error. Please try again.";
-      }
-      preview.style.display = "none";
-      output.style.display = "block";
-    })
-    .catch(err => {
-      output.textContent = "Network error: " + err.message;
-      preview.style.display = "none";
-      output.style.display = "block";
+      console.log("Safe Google API Key:", data.key);
+      // use data.key in a map, etc.
     });
-  }
-}
 
+    const htmlEditor = document.getElementById("htmlEditor");
+    const pythonEditor = document.getElementById("pythonEditor");
+    const preview = document.getElementById("preview");
+    const output = document.getElementById("pythonOutput");
 
-  function downloadCode() {
-    const activeTab = document.querySelector(".tab.active").dataset.tab;
-    const code = activeTab === "html" ? htmlEditor.value : pythonEditor.value;
-    const blob = new Blob([code], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = activeTab === "html" ? "project.html" : "script.py";
-    a.click();
-  }
-
-  function openNew() {
-    const code = htmlEditor.value;
-    const newWin = window.open();
-    newWin.document.open();
-    newWin.document.write(code);
-    newWin.document.close();
-  }
-
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-
-      if (tab.dataset.tab === "html") {
-        htmlEditor.style.display = "block";
-        pythonEditor.style.display = "none";
+    function runCode() {
+      const activeTab = document.querySelector(".tab.active").dataset.tab;
+      if (activeTab === "html") {
+        const blob = new Blob([htmlEditor.value], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        preview.src = url;
         preview.style.display = "block";
         output.style.display = "none";
       } else {
-        htmlEditor.style.display = "none";
-        pythonEditor.style.display = "block";
-        preview.style.display = "none";
-        output.style.display = "block";
+        fetch("https://emkc.org/api/v2/piston/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            language: "python",
+            version: "3.10.0",
+            files: [{ name: "main.py", content: pythonEditor.value }]
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.run) {
+            output.textContent = data.run.output || data.run.stderr || "No output.";
+          } else if (data.message) {
+            output.textContent = "Error: " + data.message;
+          } else {
+            output.textContent = "Unexpected error. Please try again.";
+          }
+          preview.style.display = "none";
+          output.style.display = "block";
+        })
+        .catch(err => {
+          output.textContent = "Network error: " + err.message;
+          preview.style.display = "none";
+          output.style.display = "block";
+        });
       }
+    }
+
+    function downloadCode() {
+      const activeTab = document.querySelector(".tab.active").dataset.tab;
+      const code = activeTab === "html" ? htmlEditor.value : pythonEditor.value;
+      const blob = new Blob([code], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = activeTab === "html" ? "project.html" : "script.py";
+      a.click();
+    }
+
+    function openNew() {
+      const code = htmlEditor.value;
+      const newWin = window.open();
+      newWin.document.open();
+      newWin.document.write(code);
+      newWin.document.close();
+    }
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        if (tab.dataset.tab === "html") {
+          htmlEditor.style.display = "block";
+          pythonEditor.style.display = "none";
+          preview.style.display = "block";
+          output.style.display = "none";
+        } else {
+          htmlEditor.style.display = "none";
+          pythonEditor.style.display = "block";
+          preview.style.display = "none";
+          output.style.display = "block";
+        }
+      });
     });
-  });
-</script>
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'login.html';
+      }).catch(err => {
+        console.error('Logout failed:', err);
+        alert('Logout failed, check console.');
+      });
+    });
+  </script>
 </body>
 </html>

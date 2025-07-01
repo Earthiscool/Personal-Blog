@@ -4,6 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Articles – Let Dreamers Dream</title>
+  <!-- Firebase Compat SDK for Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <!-- Authentication Check -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.appspot.com",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    document.body.style.display = 'none';
+    auth.onAuthStateChanged(user => {
+      if (!user || !user.emailVerified) {
+        window.location.href = 'login.html';
+      } else {
+        document.body.style.display = 'block';
+      }
+    });
+  </script>
   <style>
     body {
       margin: 0;
@@ -175,48 +199,25 @@
     }
   });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->
-  
 </head>
 </head>
 <body>
-   <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
+  <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
 
   <!-- Your other page content here -->
 
-
-
   <!-- ...rest of the page... -->
   <nav>
     <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
   </nav>
-
+  <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
   <div class="search-bar">
     <input type="text" id="search-input" placeholder="Search articles by title..." />
   </div>
@@ -320,6 +321,15 @@
     closeBtn.addEventListener('click', closeModal);
 
     loadArticles();
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'login.html';
+      }).catch(err => {
+        console.error('Logout failed:', err);
+        alert('Logout failed, check console.');
+      });
+    });
   </script>
 </body>
 </html>

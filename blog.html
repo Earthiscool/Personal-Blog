@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
-<head>
+  <!-- Firebase Compat SDK for Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <!-- Authentication Check -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.appspot.com",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    document.body.style.display = 'none';
+  </script>
+  <head>
 <title>Projects - Let Dreamers Dream</title>
 <!-- PWA Manifest -->
 <link rel="manifest" href="/Personal-Blog/manifest.json" />
@@ -165,6 +181,7 @@
     <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
   </nav>
 
+  <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
   <button onclick="enablePush()">Enable Notifications</button>
 
   <script>
@@ -312,11 +329,12 @@
     }
 
     onAuthStateChanged(auth, (user) => {
-      if (user) {
+      if (user && user.emailVerified) {
+        document.body.style.display = 'block';
         loadPosts();
       } else {
         alert("Please sign in to view the blog.");
-        signInWithPopup(auth, provider).catch(console.error);
+        window.location.href = 'login.html';
       }
     });
   </script>
@@ -341,13 +359,22 @@
 
     if (isLikelyIPadOS()) {
       banner.style.display = 'block';
-      banner.textContent = '📱 On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.';
+      banner.textContent = ' shriek On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.';
     } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
       banner.style.display = 'block';
       banner.textContent = '📱 Tap Share → Add to Home Screen to enable notifications. Then go to Blog and Click Enable Notifications';
     }
   });
 </script>
-
+  <script>
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'login.html';
+      }).catch(err => {
+        console.error('Logout failed:', err);
+        alert('Logout failed, check console.');
+      });
+    });
+  </script>
 </body>
 </html>
