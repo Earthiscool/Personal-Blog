@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Articles – Let Dreamers Dream</title>
-  <!-- Firebase Compat SDK for Auth -->
+
+  <!-- Firebase Compat SDK (for Auth) -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <!-- Authentication Check -->
+
+  <!-- Hide content until login is verified -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
@@ -17,17 +19,22 @@
       messagingSenderId: "769338292042",
       appId: "1:769338292042:web:d12a229145acb0e575f3b3"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    document.body.style.display = 'none';
-    auth.onAuthStateChanged(user => {
-      if (!user || !user.emailVerified) {
-        window.location.href = 'login.html';
-      } else {
-        document.body.style.display = 'block';
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.style.display = 'none';
+      auth.onAuthStateChanged(user => {
+        if (!user || !user.emailVerified) {
+          window.location.href = 'login.html';
+        } else {
+          document.body.style.display = 'block';
+        }
+      });
     });
   </script>
+
+  <!-- Styles -->
   <style>
     body {
       margin: 0;
@@ -150,81 +157,67 @@
       cursor: pointer;
     }
   </style>
-  <head>
-<title>Projects - Let Dreamers Dream</title>
-<!-- PWA Manifest -->
-<link rel="manifest" href="/Personal-Blog/manifest.json" />
-<meta name="theme-color" content="#111111" />
 
-<!-- iOS Web App Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Let Dreamers Dream">
-<link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg">
+  <!-- PWA + OneSignal -->
+  <link rel="manifest" href="/Personal-Blog/manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Let Dreamers Dream">
+  <link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg">
 
-<!-- OneSignal SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      autoRegister: false,
-      notifyButton: { enable: true },
-      serviceWorkerParam: {
-        scope: "/Personal-Blog/"
-      },
-      welcomeNotification: {
-        url: "https://earthiscool.github.io/Personal-Blog/"
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+        autoRegister: false,
+        notifyButton: { enable: true },
+        serviceWorkerParam: { scope: "/Personal-Blog/" },
+        welcomeNotification: {
+          url: "https://earthiscool.github.io/Personal-Blog/"
+        }
+      });
+
+      try {
+        const registration = await navigator.serviceWorker.register(
+          "/Personal-Blog/OneSignalSDKWorker.js",
+          { scope: "/Personal-Blog/" }
+        );
+        console.log("✅ Service worker registered", registration);
+        OneSignal.SERVICE_WORKER_PARAM = {
+          scope: "/Personal-Blog/",
+          registration: registration
+        };
+        await OneSignal.Notifications.requestPermission();
+      } catch (error) {
+        console.error("❌ Service worker registration failed:", error);
       }
     });
-
-    // Manually register Service Worker yourself — NOT via OneSignal SDK defaults
-    try {
-      const registration = await navigator.serviceWorker.register(
-        "/Personal-Blog/OneSignalSDKWorker.js",
-        { scope: "/Personal-Blog/" }
-      );
-      console.log("✅ Custom service worker registered", registration);
-
-      // Tell OneSignal to use the manually registered worker
-      OneSignal.SERVICE_WORKER_PARAM = {
-        scope: "/Personal-Blog/",
-        registration: registration
-      };
-
-      await OneSignal.Notifications.requestPermission();
-    } catch (error) {
-      console.error("❌ Custom service worker registration failed:", error);
-    }
-  });
-</script>
-</head>
+  </script>
 </head>
 <body>
   <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
 
-  <!-- Your other page content here -->
-
-  <!-- ...rest of the page... -->
   <nav>
-    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="index.html" style="color:#00ffff;">Projects</a>
+    <a href="blog.html" style="color:#00ffff;">Blog</a>
+    <a href="contact.html" style="color:#00ffff;">Contact</a>
+    <a href="editor.html" style="color:#00ffff;">Editor</a>
+    <a href="course.html" style="color:#00ffff;">Course</a>
+    <a href="articles.html" style="color:#00ffff;">Article</a>
   </nav>
+
   <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
+
   <div class="search-bar">
     <input type="text" id="search-input" placeholder="Search articles by title..." />
   </div>
 
-  <div class="container" id="article-list">
-    <!-- Articles will be injected here -->
-  </div>
+  <div class="container" id="article-list"></div>
 
   <div class="modal" id="article-modal">
     <div class="modal-content" id="modal-content">
@@ -234,11 +227,12 @@
     </div>
   </div>
 
+  <!-- Firestore Code (Module-based) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
+    const app = initializeApp({
       apiKey: 'AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q',
       authDomain: 'letdreamersdream.firebaseapp.com',
       projectId: 'letdreamersdream',
@@ -246,11 +240,9 @@
       messagingSenderId: '769338292042',
       appId: '1:769338292042:web:d12a229145acb0e575f3b3',
       measurementId: 'G-3PEH6QWSWJ'
-    };
+    });
 
-    const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const articleList = document.getElementById('article-list');
     const closeBtn = document.querySelector('.close-btn');
     const searchInput = document.getElementById('search-input');
@@ -273,18 +265,18 @@
         renderArticles(articles);
       } catch (error) {
         console.error("Failed to load articles:", error);
-        articleList.innerHTML = '<p style="color: red;">Error loading articles: ' + error.message + '</p>';
+        articleList.innerHTML = `<p style="color: red;">Error loading articles: ${error.message}</p>`;
       }
     }
 
-    function renderArticles(articlesToDisplay) {
+    function renderArticles(articleArr) {
       articleList.innerHTML = '';
-      if (articlesToDisplay.length === 0) {
+      if (articleArr.length === 0) {
         articleList.innerHTML = '<p>No articles found.</p>';
         return;
       }
 
-      articlesToDisplay.forEach(data => {
+      articleArr.forEach(data => {
         const card = document.createElement("div");
         card.className = "article-card";
         card.innerHTML = `
@@ -295,7 +287,7 @@
             <span><strong>Read Time:</strong> ${data.readTime || 'N/A'}</span>
           </div>
         `;
-        card.onclick = () => openModal(data.title || 'Untitled', data.body || 'No content available');
+        card.onclick = () => openModal(data.title, data.body);
         articleList.appendChild(card);
       });
     }
@@ -312,14 +304,13 @@
 
     searchInput.addEventListener('input', () => {
       const searchTerm = searchInput.value.trim().toLowerCase();
-      const filteredArticles = articles.filter(article =>
+      const filtered = articles.filter(article =>
         (article.title || '').toLowerCase().includes(searchTerm)
       );
-      renderArticles(filteredArticles);
+      renderArticles(filtered);
     });
 
     closeBtn.addEventListener('click', closeModal);
-
     loadArticles();
 
     document.getElementById('logoutBtn').addEventListener('click', () => {

@@ -19,13 +19,15 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    document.body.style.display = 'none';
-    auth.onAuthStateChanged(user => {
-      if (!user || !user.emailVerified) {
-        window.location.href = 'login.html';
-      } else {
-        document.body.style.display = 'block';
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.style.display = 'none';
+      auth.onAuthStateChanged(user => {
+        if (!user || !user.emailVerified) {
+          window.location.href = 'login.html';
+        } else {
+          document.body.style.display = 'block';
+        }
+      });
     });
   </script>
   <style>
@@ -112,99 +114,77 @@
       padding: 1rem;
     }
   </style>
-  <head>
-<title>Projects - Let Dreamers Dream</title>
-<!-- PWA Manifest -->
-<link rel="manifest" href="/Personal-Blog/manifest.json" />
-<meta name="theme-color" content="#111111" />
-
-<!-- iOS Web App Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Let Dreamers Dream">
-<link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg">
-
-<!-- OneSignal SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      autoRegister: false,
-      notifyButton: { enable: true },
-      serviceWorkerParam: {
-        scope: "/Personal-Blog/"
-      },
-      welcomeNotification: {
-        url: "https://earthiscool.github.io/Personal-Blog/"
+  <link rel="manifest" href="/Personal-Blog/manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Let Dreamers Dream">
+  <link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+        autoRegister: false,
+        notifyButton: { enable: true },
+        serviceWorkerParam: {
+          scope: "/Personal-Blog/"
+        },
+        welcomeNotification: {
+          url: "https://earthiscool.github.io/Personal-Blog/"
+        }
+      });
+      try {
+        const registration = await navigator.serviceWorker.register(
+          "/Personal-Blog/OneSignalSDKWorker.js",
+          { scope: "/Personal-Blog/" }
+        );
+        console.log("✅ Custom service worker registered", registration);
+        OneSignal.SERVICE_WORKER_PARAM = {
+          scope: "/Personal-Blog/",
+          registration: registration
+        };
+        await OneSignal.Notifications.requestPermission();
+      } catch (error) {
+        console.error("❌ Custom service worker registration failed:", error);
       }
     });
-
-    // Manually register Service Worker yourself — NOT via OneSignal SDK defaults
-    try {
-      const registration = await navigator.serviceWorker.register(
-        "/Personal-Blog/OneSignalSDKWorker.js",
-        { scope: "/Personal-Blog/" }
-      );
-      console.log("✅ Custom service worker registered", registration);
-
-      // Tell OneSignal to use the manually registered worker
-      OneSignal.SERVICE_WORKER_PARAM = {
-        scope: "/Personal-Blog/",
-        registration: registration
-      };
-
-      await OneSignal.Notifications.requestPermission();
-    } catch (error) {
-      console.error("❌ Custom service worker registration failed:", error);
-    }
-  });
-</script>
-</head>
+  </script>
 </head>
 <body>
   <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
-
-  <!-- Your other page content here -->
-
-  <!-- ...rest of the page... -->
   <nav>
-    <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="index.html">Projects</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+    <a href="editor.html">Editor</a>
+    <a href="course.html">Course</a>
+    <a href="articles.html">Article</a>
   </nav>
-  <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
+  <button id="logoutBtn">Logout</button>
   <div id="tabs">
     <div class="tab active" data-tab="html">HTML/CSS/JS</div>
     <div class="tab" data-tab="python">Python</div>
   </div>
-
   <section id="editorSection">
     <textarea id="htmlEditor" placeholder="Write HTML, CSS, or JS code here..."></textarea>
     <textarea id="pythonEditor" placeholder="Write Python code here..." style="display:none;"></textarea>
-
     <div>
       <button onclick="runCode()">Run</button>
       <button onclick="downloadCode()">Download</button>
       <button onclick="openNew()">Open in New Window</button>
     </div>
-
     <iframe id="preview" style="display: block;"></iframe>
     <pre id="pythonOutput" style="display: none;"></pre>
   </section>
-
   <script>
     fetch('/api/key')
     .then(res => res.json())
     .then(data => {
       console.log("Safe Google API Key:", data.key);
-      // use data.key in a map, etc.
     });
 
     const htmlEditor = document.getElementById("htmlEditor");
@@ -232,13 +212,7 @@
         })
         .then(res => res.json())
         .then(data => {
-          if (data.run) {
-            output.textContent = data.run.output || data.run.stderr || "No output.";
-          } else if (data.message) {
-            output.textContent = "Error: " + data.message;
-          } else {
-            output.textContent = "Unexpected error. Please try again.";
-          }
+          output.textContent = data.run?.output || data.run?.stderr || data.message || "Unexpected error.";
           preview.style.display = "none";
           output.style.display = "block";
         })
@@ -272,7 +246,6 @@
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
-
         if (tab.dataset.tab === "html") {
           htmlEditor.style.display = "block";
           pythonEditor.style.display = "none";
