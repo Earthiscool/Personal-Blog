@@ -33,7 +33,6 @@
       }
     });
 
-    // Manually register Service Worker yourself — NOT via OneSignal SDK defaults
     try {
       const registration = await navigator.serviceWorker.register(
         "/Personal-Blog/OneSignalSDKWorker.js",
@@ -41,7 +40,6 @@
       );
       console.log("✅ Custom service worker registered", registration);
 
-      // Tell OneSignal to use the manually registered worker
       OneSignal.SERVICE_WORKER_PARAM = {
         scope: "/Personal-Blog/",
         registration: registration
@@ -53,23 +51,6 @@
     }
   });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 </head>
 
   <title>Let Dreamers Dream – Blog</title>
@@ -155,15 +136,21 @@
   </style>
 </head>
 <body>
-   <div id="iosBanner" style="display:none; background:#111; color:white; padding:10px; text-align:center;">
+  <div id="iosBanner" style="
+    display:none;
+    background:#111;
+    color:white;
+    padding:10px;
+    text-align:center;
+    position:fixed;
+    bottom:0;
+    width:100%;
+    z-index:9999;
+    font-size:0.9rem;
+  ">
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
 
-  <!-- Your other page content here -->
-
-  
-
-  <!-- ...rest of the page... -->
   <header>
     <h1>Let Dreamers Dream</h1>
     <p>Where imagination meets code</p>
@@ -171,44 +158,41 @@
 
   <nav>
     <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
-  <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-  <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-  <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-  <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-  <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
+    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
   </nav>
-<button onclick="enablePush()">Enable Notifications</button>
 
-<script>
-async function enablePush() {
-  try {
-    const permission = await OneSignal.Notifications.requestPermission();
-    console.log('Push permission result:', permission);
-    if (permission === 'granted') {
-      await OneSignal.registerForPushNotifications();
-      console.log('User subscribed to push notifications');
-    } else {
-      console.log('User denied push permission or dismissed prompt');
+  <button onclick="enablePush()">Enable Notifications</button>
+
+  <script>
+    async function enablePush() {
+      try {
+        const permission = await OneSignal.Notifications.requestPermission();
+        console.log('Push permission result:', permission);
+        if (permission === 'granted') {
+          await OneSignal.registerForPushNotifications();
+          console.log('User subscribed to push notifications');
+        } else {
+          console.log('User denied push permission or dismissed prompt');
+        }
+      } catch (e) {
+        console.error('Error requesting push permission', e);
+      }
     }
-  } catch (e) {
-    console.error('Error requesting push permission', e);
-  }
-}
-</script>
-
-
-
+  </script>
 
   <input type="search" id="searchBar" placeholder="Search blog posts..." aria-label="Search blog posts" />
   <div id="postsContainer"></div>
 
   <script type="module">
     fetch('/api/key')
-  .then(res => res.json())
-  .then(data => {
-    console.log("Safe Google API Key:", data.key);
-    // use data.key in a map, etc.
-  });
+    .then(res => res.json())
+    .then(data => {
+      console.log("Safe Google API Key:", data.key);
+    });
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import {
@@ -333,6 +317,17 @@ async function enablePush() {
       } else {
         alert("Please sign in to view the blog.");
         signInWithPopup(auth, provider).catch(console.error);
+      }
+    });
+  </script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+      if (isiOS && !isStandalone) {
+        document.getElementById('iosBanner').style.display = 'block';
       }
     });
   </script>
