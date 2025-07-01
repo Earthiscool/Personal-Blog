@@ -7,16 +7,53 @@
 <head>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" async></script>
 <script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(function(OneSignal) {
-    OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js",
-      serviceWorkerParam: { scope: "./" }
+// 1) Manually register the workers in the correct folder/scope:
+(async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register(
+        '/Personal-Blog/OneSignalSDKWorker.js',
+        { scope: '/Personal-Blog/' }
+      );
+      console.log('✅ OneSignal main worker registered');
+    } catch (e) {
+      console.warn('⚠️ Main worker registration failed:', e);
+    }
+    try {
+      await navigator.serviceWorker.register(
+        '/Personal-Blog/OneSignalSDKUpdaterWorker.js',
+        { scope: '/Personal-Blog/' }
+      );
+      console.log('✅ OneSignal updater worker registered');
+    } catch (e) {
+      console.warn('⚠️ Updater worker registration failed:', e);
+    }
+  }
+
+  // 2) Load and init OneSignal WITHOUT auto‑registering
+  const s = document.createElement('script');
+  s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  s.async = true;
+  s.onload = () => {
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function() {
+      OneSignal.init({
+        appId: '5afa549f-3762-4231-8ec6-6a98798aea66',
+        autoRegister: false,           // disable built‑in registration
+        notifyButton: { enable: true },
+        welcomeNotification: {
+          title: 'Welcome to Let Dreamers Dream!',
+          message: 'Thanks for subscribing!'
+        }
+      });
+      // Finally, prompt the user
+      OneSignal.Notifications.requestPermission();
     });
-  });
+  };
+  document.head.appendChild(s);
+})();
 </script>
+
 
 
 
