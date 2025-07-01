@@ -179,37 +179,48 @@
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   (async () => {
-    // 1) Manually register the worker at the exact URL + scope you control:
     if ('serviceWorker' in navigator) {
       try {
+        // Register the main worker
         await navigator.serviceWorker.register(
           '/Personal-Blog/OneSignalSDKWorker.js',
           { scope: '/Personal-Blog/' }
         );
-        console.log('✅ OneSignal worker registered manually');
+        console.log('✅ OneSignal main worker registered');
       } catch (e) {
-        console.error('❌ Worker registration failed:', e);
+        console.error('❌ Main worker registration failed', e);
+      }
+      try {
+        // Register the updater worker
+        await navigator.serviceWorker.register(
+          '/Personal-Blog/OneSignalSDKUpdaterWorker.js',
+          { scope: '/Personal-Blog/' }
+        );
+        console.log('✅ OneSignal updater worker registered');
+      } catch (e) {
+        console.error('❌ Updater worker registration failed', e);
       }
     }
 
-    // 2) Now call OneSignal.init, telling it NOT to auto-register a worker:
+    // Now initialize OneSignal without letting it re-register workers
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-        autoRegister: false,            // Prevent OneSignal from doing its own registration
+        autoRegister: false,          // prevent builtin registration
         notifyButton: { enable: true },
         welcomeNotification: {
-          title: "Welcome!",
+          title: "Welcome to Let Dreamers Dream!",
           message: "Thanks for subscribing!"
         }
       });
 
-      // 3) Prompt the user:
+      // Prompt the user for permission
       await OneSignal.showSlidedownPrompt();
     });
   })();
 </script>
+
 
 
 
