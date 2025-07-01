@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
 <head>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" async></script>
 <script>
-// 1) Manually register the workers in the correct folder/scope:
+// Manually register your workers in the right subpath:
 (async () => {
   if ('serviceWorker' in navigator) {
     try {
@@ -30,29 +29,31 @@
     }
   }
 
-  // 2) Load and init OneSignal WITHOUT auto‑registering
+  // Dynamically load the OneSignal SDK *after* your manual registration:
   const s = document.createElement('script');
   s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
   s.async = true;
   s.onload = () => {
+    // Initialize OneSignal without letting it re‑register a worker:
     window.OneSignal = window.OneSignal || [];
     OneSignal.push(function() {
       OneSignal.init({
         appId: '5afa549f-3762-4231-8ec6-6a98798aea66',
-        autoRegister: false,           // disable built‑in registration
+        autoRegister: false,           // DISABLE built‑in worker registration
         notifyButton: { enable: true },
         welcomeNotification: {
           title: 'Welcome to Let Dreamers Dream!',
           message: 'Thanks for subscribing!'
         }
       });
-      // Finally, prompt the user
+      // Show the permission prompt
       OneSignal.Notifications.requestPermission();
     });
   };
   document.head.appendChild(s);
 })();
 </script>
+
 
 
 
