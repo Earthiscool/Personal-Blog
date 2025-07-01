@@ -89,52 +89,24 @@
     }
   </style>
   <head>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-// 1) Manually register both service workers at the correct subpath:
-(async () => {
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register(
-        '/Personal-Blog/OneSignalSDKWorker.js',
-        { scope: '/Personal-Blog/' }
-      );
-      console.log('✅ OneSignal main worker registered manually');
-    } catch (e) {
-      console.warn('⚠️ Main worker registration failed:', e);
-    }
-    try {
-      await navigator.serviceWorker.register(
-        '/Personal-Blog/OneSignalSDKUpdaterWorker.js',
-        { scope: '/Personal-Blog/' }
-      );
-      console.log('✅ OneSignal updater worker registered manually');
-    } catch (e) {
-      console.warn('⚠️ Updater worker registration failed:', e);
-    }
-  }
-
-  // 2) Load the SDK and initialize WITHOUT auto‑registering:
-  const script = document.createElement('script');
-  script.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
-  script.defer = true;
-  script.onload = () => {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async () => {
-      await OneSignal.init({
-        appId: '5afa549f-3762-4231-8ec6-6a98798aea66',
-        autoRegister: false,      // prevent duplicate registration
-        notifyButton: { enable: true },
-        welcomeNotification: {
-          title: 'Welcome to Let Dreamers Dream!',
-          message: 'Thanks for subscribing!'
-        }
-      });
-      // show prompt
-      await OneSignal.showSlidedownPrompt();
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerParam: { scope: "/Personal-Blog/" }, // <--- this is very important
+      notifyButton: { enable: true },
+      welcomeNotification: {
+        title: "Welcome to Let Dreamers Dream!",
+        message: "Thanks for subscribing to notifications!"
+      }
     });
-  };
-  document.head.appendChild(script);
-})();
+
+    await OneSignal.showSlidedownPrompt();
+  });
 </script>
 
 
