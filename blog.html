@@ -158,15 +158,24 @@
   <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
   <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
   </nav>
-<button onclick="requestPushPermission()">Enable Notifications</button>
+<button onclick="enablePush()">Enable Notifications</button>
 
 <script>
-  function requestPushPermission() {
-    OneSignal.Notifications.showSlidedownPrompt().catch((e) => {
-      console.error("Error showing prompt:", e);
-    });
+  async function enablePush() {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission();
+      console.log("🔔 Permission result:", permission);
+      if (permission === 'granted') {
+        console.log("✅ Push notifications enabled!");
+      } else {
+        console.warn("❌ Push permission denied or dismissed");
+      }
+    } catch (e) {
+      console.error("❌ Error requesting push permission:", e);
+    }
   }
 </script>
+
 
 
   <input type="search" id="searchBar" placeholder="Search blog posts..." aria-label="Search blog posts" />
