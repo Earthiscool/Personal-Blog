@@ -171,20 +171,22 @@
 <button onclick="enablePush()">Enable Notifications</button>
 
 <script>
-  async function enablePush() {
-    try {
-      const permission = await OneSignal.Notifications.requestPermission();
-      console.log("🔔 Permission result:", permission);
-      if (permission === 'granted') {
-        console.log("✅ Push notifications enabled!");
-      } else {
-        console.warn("❌ Push permission denied or dismissed");
-      }
-    } catch (e) {
-      console.error("❌ Error requesting push permission:", e);
+async function enablePush() {
+  try {
+    const permission = await OneSignal.Notifications.requestPermission();
+    console.log('Push permission result:', permission);
+    if (permission === 'granted') {
+      await OneSignal.registerForPushNotifications();
+      console.log('User subscribed to push notifications');
+    } else {
+      console.log('User denied push permission or dismissed prompt');
     }
+  } catch (e) {
+    console.error('Error requesting push permission', e);
   }
+}
 </script>
+
 
 
 
