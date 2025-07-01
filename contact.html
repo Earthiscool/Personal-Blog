@@ -176,15 +176,20 @@
     }
   </style>
   <head>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" async></script>
+
+  <!-- OneSignal Init -->
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.init({
+        appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+        serviceWorkerPath: "Personal-Blog/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      });
     });
-  });
-</script>
+  </script>
+
 
 
 
