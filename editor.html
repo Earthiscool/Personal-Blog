@@ -93,24 +93,22 @@
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
-      serviceWorkerParam: {
-        scope: "/Personal-Blog/"
-      },
-      notifyButton: {
-        enable: true
-      },
-      welcomeNotification: {
-        title: "Welcome to Let Dreamers Dream!",
-        message: "Thanks for subscribing to notifications!"
-      }
-    });
-
-    await OneSignal.showSlidedownPrompt();
+  await OneSignal.init({
+    appId: "your-app-id",
+    serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
+    serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+    serviceWorkerParam: { scope: "/Personal-Blog/" },
+    notifyButton: { enable: true },
+    welcomeNotification: {
+      title: "Welcome to Let Dreamers Dream!",
+      message: "Thanks for subscribing to notifications!"
+    }
   });
+
+  // Use this instead
+  await OneSignal.Notifications.requestPermission();
+});
+
 </script>
 
 
