@@ -11,10 +11,10 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      serviceWorkerPath: "/Personal-Blog/OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "/Personal-Blog/OneSignalSDKUpdaterWorker.js",
+      serviceWorkerPath: "Personal-Blog/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "Personal-Blog/OneSignalSDKUpdaterWorker.js",
       serviceWorkerParam: { scope: "/Personal-Blog/" },
-      autoRegister: false, // Disable OneSignal’s default registration
+      autoRegister: false,
       notifyButton: { enable: true },
       welcomeNotification: {
         title: "Welcome to Let Dreamers Dream!",
@@ -22,17 +22,23 @@
       },
       allowLocalhostAsSecureOrigin: true
     });
-    // Manually register service worker
+
+    // Manually register the service worker
     try {
-      await navigator.serviceWorker.register('/Personal-Blog/OneSignalSDKWorker.js', { scope: '/Personal-Blog/' });
-      console.log('✅ Service worker registered');
+      const registration = await navigator.serviceWorker.register(
+        "Personal-Blog/OneSignalSDKWorker.js",
+        { scope: "/Personal-Blog/" }
+      );
+      console.log("✅ Service worker registered", registration);
     } catch (e) {
-      console.error('⚠️ Service worker registration failed:', e);
+      console.error("⚠️ Service worker registration failed:", e);
     }
-    // Request notification permission
+
+    // Request permission from the user
     await OneSignal.Notifications.requestPermission();
   });
 </script>
+
 
 
 
