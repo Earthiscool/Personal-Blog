@@ -397,5 +397,78 @@
     navLinks.classList.toggle('show');
   });
 </script>
+ <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+      if (isiOS && !isStandalone) {
+        document.getElementById('iosBanner').style.display = 'block';
+      }
+    });
+  </script>
+ <script>
+  function isLikelyIPadOS() {
+    return navigator.userAgent.includes("Macintosh") && 'ontouchend' in document;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('iosBanner');
+
+    if (isLikelyIPadOS()) {
+      banner.style.display = 'block';
+      banner.textContent = '📱 On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.';
+    } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
+      banner.style.display = 'block';
+      banner.textContent = '📱 Tap Share → Add to Home Screen to enable notifications. Then go to Blog and Click Enable Notifications';
+    }
+  });
+</script>
+<!-- Notification Prompt Popup -->
+<div id="notificationPopup" style="
+  display:none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #111;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+  z-index: 9999;
+  max-width: 300px;
+  text-align: center;
+">
+  <p style="margin: 0 0 10px;">🔔 Enable notifications to stay updated!</p>
+  <button onclick="goToBlog()" style="
+    background: #00ffff;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  ">Enable Now</button>
+</div>
+
+<script>
+  function isDesktop() {
+    return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  }
+
+  function goToBlog() {
+    localStorage.setItem('notificationPopupSeen', 'true');
+    window.location.href = 'blog.html';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const hasSeenPopup = localStorage.getItem('notificationPopupSeen');
+    if (isDesktop() && !hasSeenPopup) {
+      const popup = document.getElementById('notificationPopup');
+      popup.style.display = 'block';
+    }
+  });
+</script>
+
 </body>
 </html>

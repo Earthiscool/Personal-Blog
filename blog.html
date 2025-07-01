@@ -331,5 +331,23 @@
       }
     });
   </script>
+  <script>
+  function isLikelyIPadOS() {
+    return navigator.userAgent.includes("Macintosh") && 'ontouchend' in document;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('iosBanner');
+
+    if (isLikelyIPadOS()) {
+      banner.style.display = 'block';
+      banner.textContent = '📱 On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.';
+    } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
+      banner.style.display = 'block';
+      banner.textContent = '📱 Tap Share → Add to Home Screen to enable notifications. Then go to Blog and Click Enable Notifications';
+    }
+  });
+</script>
+
 </body>
 </html>
