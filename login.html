@@ -116,7 +116,7 @@
   <div class="container">
     <div class="instruction-box">
       To Signup:<br />
-      You must click the sign-up button twice and ignore the error. Go to the login button and click login. Go to your email and verify it. This verification will likely be in the spam folder, and then log in.
+      You must click the sign-up button twice and ignore the error. Go to the login button and click login. Go to your email and verify it. This verifiication will likley be in the spam folder, and then log in.
     </div>
 
     <div class="auth-box">
@@ -201,7 +201,7 @@
             await auth.signOut();
             return;
           }
-          window.location.href = 'blog.html';
+          window.location.href = 'index.html';
         }
       } catch (err) {
         if (isSignup && err.message.includes("Missing or insufficient permissions")) {
@@ -226,7 +226,7 @@
             photoURL: user.photoURL || ""
           });
         }
-        window.location.href = 'blog.html';
+        window.location.href = 'index.html';
       } catch (error) {
         document.getElementById('error').textContent = error.message;
       }
