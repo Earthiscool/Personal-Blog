@@ -141,6 +141,12 @@
 
   <div id="loadingMessage">Loading...</div>
   <div id="errorMessage" style="display:none;"></div>
+<input
+  type="text"
+  id="searchInput"
+  placeholder="Search discussions..."
+  style="margin-bottom: 1rem; padding: 0.5rem; font-size: 1rem; border-radius: 6px; border: none; width: 100%; max-width: 500px; align-self: center;"
+/>
 
   <!-- Container for all discussions list -->
   <div id="discussionsList" style="display:none;"></div>
@@ -233,23 +239,48 @@
 
         discussionsList.innerHTML = "";
 
+        const allDiscussions = [];
+
         querySnapshot.forEach(doc => {
           const data = doc.data();
           const id = doc.id;
           const title = data.title || "Untitled Discussion";
 
-          const div = document.createElement('div');
-          div.classList.add('discussion-item');
-
-          const link = document.createElement('a');
-          link.classList.add('discussion-link');
-          // Use # here, navigation is handled on click
-          link.href = `discussion.html?id=${encodeURIComponent(id)}`;
-          link.textContent = title;
-
-          div.appendChild(link);
-          discussionsList.appendChild(div);
+          allDiscussions.push({ id, title });
         });
+
+        function renderFilteredDiscussions(filterText = "") {
+          discussionsList.innerHTML = "";
+          const filtered = allDiscussions.filter(d =>
+            d.title.toLowerCase().includes(filterText.toLowerCase())
+          );
+
+          if (filtered.length === 0) {
+            discussionsList.innerHTML = "<p>No discussions found.</p>";
+            return;
+          }
+
+          filtered.forEach(({ id, title }) => {
+            const div = document.createElement('div');
+            div.classList.add('discussion-item');
+
+            const link = document.createElement('a');
+            link.classList.add('discussion-link');
+            link.href = `discussion.html?id=${encodeURIComponent(id)}`;
+            link.textContent = title;
+
+            div.appendChild(link);
+            discussionsList.appendChild(div);
+          });
+        }
+
+        renderFilteredDiscussions();
+
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', () => {
+          renderFilteredDiscussions(searchInput.value);
+        });
+
 
         // Attach click listener to intercept link clicks for login before navigation
         discussionsList.addEventListener('click', async (e) => {
