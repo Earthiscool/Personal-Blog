@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discussion - Let Dreamers Dream</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000;
+      color: #0ff;
+      margin: 0; padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      background: #111;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    nav a {
+      color: #0ff;
+      margin-right: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #0ff;
+    }
+    #discussionsList {
+      flex-grow: 1;
+      overflow-y: auto;
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      background: #111;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .discussion-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #0ff;
+    }
+    .discussion-item:last-child {
+      border-bottom: none;
+    }
+    .discussion-link {
+      color: #0ff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      display: block;
+      width: 100%;
+      cursor: pointer;
+    }
+    .discussion-link:hover {
+      text-decoration: underline;
+    }
+    #comments {
+      flex-grow: 1;
+      overflow-y: auto;
+      border: 1px solid #00ffff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: #111;
+      color: #fff;
+    }
+    .comment {
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      border-left: 4px solid #00ffff;
+      background: #222;
+      border-radius: 6px;
+      color: #fff;
+    }
+    .comment strong {
+      color: #0ff;
+    }
+    #commentForm {
+      display: none;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    #commentInput {
+      flex-grow: 1;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    #sendBtn {
+      background: #00ffff;
+      border: none;
+      padding: 0 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+      font-size: 1rem;
+    }
+    #sendBtn:disabled {
+      background: #006666;
+      cursor: not-allowed;
+    }
+    #loginMessage {
+      color: #f66;
+      text-align: center;
+      margin-top: 2rem;
+      display: none;
+    }
+    #loadingMessage, #errorMessage {
+      text-align: center;
+      margin-top: 2rem;
+      font-style: italic;
+      color: #f66;
+    }
+    
+  </style>
+  
+</head>
+<body>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="blog.html">Blog</a>
+    <a href="articles.html">Contact</a>
+    <a href="discussion.html">Editor</a>
+    <a href="articles.html">Course</a>
+    <a href="discussion.html">Article</a>
+    <a href="articles.html">Discussion</a>
+
+  </nav>
+
+  <h1 id="pageTitle">Loading...</h1>
+
+  <div id="loadingMessage">Loading...</div>
+  <div id="errorMessage" style="display:none;"></div>
+
+  <!-- Container for all discussions list -->
+  <div id="discussionsList" style="display:none;"></div>
+
+  <!-- Single discussion content -->
+  <h2 id="discussionTitle" style="display:none;"></h2>
+  <div id="comments" style="display:none;"></div>
+
+  <form id="commentForm">
+    <input type="text" id="commentInput" placeholder="Write your comment..." autocomplete="off" required />
+    <button type="submit" id="sendBtn">Send</button>
+  </form>
+
+  <div id="loginMessage">You must be logged in to view and post comments.</div>
+
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithPopup,
+      GoogleAuthProvider
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      orderBy,
+      getDocs,
+      doc,
+      getDoc,
+      onSnapshot,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+      authDomain: "letdreamersdream.firebaseapp.com",
+      projectId: "letdreamersdream",
+      storageBucket: "letdreamersdream.appspot.com",
+      messagingSenderId: "769338292042",
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    const pageTitle = document.getElementById('pageTitle');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const discussionsList = document.getElementById('discussionsList');
+    const discussionTitleEl = document.getElementById('discussionTitle');
+    const commentsEl = document.getElementById('comments');
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const loginMessage = document.getElementById('loginMessage');
+
+    const params = new URLSearchParams(window.location.search);
+    const discussionId = params.get('id');
+    let currentUser = null;
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function loadAllDiscussions() {
+      pageTitle.textContent = "All Discussions";
+      discussionsList.style.display = 'block';
+      loadingMessage.textContent = "Loading discussions...";
+      errorMessage.style.display = "none";
+
+      try {
+        const discussionsRef = collection(db, "discussions");
+        const q = query(discussionsRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        loadingMessage.style.display = "none";
+
+        if (querySnapshot.empty) {
+          discussionsList.textContent = "No discussions found.";
+          return;
+        }
+
+        discussionsList.innerHTML = "";
+
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          const id = doc.id;
+          const title = data.title || "Untitled Discussion";
+
+          const div = document.createElement('div');
+          div.classList.add('discussion-item');
+
+          const link = document.createElement('a');
+          link.classList.add('discussion-link');
+          // Use # here, navigation is handled on click
+          link.href = `discussion.html?id=${encodeURIComponent(id)}`;
+          link.textContent = title;
+
+          div.appendChild(link);
+          discussionsList.appendChild(div);
+        });
+
+        // Attach click listener to intercept link clicks for login before navigation
+        discussionsList.addEventListener('click', async (e) => {
+          const link = e.target.closest('a.discussion-link');
+          if (!link) return;
+          e.preventDefault();
+
+          console.log("[discussionsList] Discussion link clicked:", link.href);
+
+          if (!auth.currentUser) {
+            console.log("[discussionsList] No user logged in, starting login flow...");
+            try {
+              await signInWithPopup(auth, provider);
+              console.log("[discussionsList] Login successful:", auth.currentUser.uid);
+            } catch (err) {
+              console.error("[discussionsList] Login failed or cancelled", err);
+              alert("Login required to view discussions.");
+              return;
+            }
+          } else {
+            console.log("[discussionsList] User already logged in:", auth.currentUser.uid);
+          }
+
+          // After login, navigate to discussion
+          window.location.href = link.href;
+        });
+
+      } catch (error) {
+        loadingMessage.style.display = "none";
+        errorMessage.style.display = "block";
+        errorMessage.textContent = "Error loading discussions: " + error.message;
+        console.error(error);
+      }
+    }
+
+    async function loadDiscussion(id) {
+      pageTitle.textContent = "Discussion Thread";
+      loadingMessage.style.display = "block";
+      try {
+        console.log("[loadDiscussion] Start loading discussion with ID:", id);
+        const docRef = doc(db, "discussions", id);
+        const docSnap = await getDoc(docRef);
+
+        loadingMessage.style.display = "none";
+
+        if (!docSnap.exists()) {
+          errorMessage.style.display = "block";
+          errorMessage.textContent = "Discussion not found.";
+          console.warn("[loadDiscussion] Discussion not found:", id);
+          return false;
+        }
+
+        const data = docSnap.data();
+        discussionTitleEl.textContent = data.title || "Untitled Discussion";
+        discussionTitleEl.style.display = "block";
+        commentsEl.style.display = "block";
+
+        console.log("[loadDiscussion] Loaded discussion title:", discussionTitleEl.textContent);
+        return true;
+      } catch (error) {
+        loadingMessage.style.display = "none";
+        errorMessage.style.display = "block";
+        errorMessage.textContent = "Error loading discussion: " + error.message;
+        console.error("[loadDiscussion] Error loading discussion:", error);
+        return false;
+      }
+    }
+
+    function listenComments(id) {
+      console.log("[listenComments] Start listening to comments for discussion:", id);
+      const commentsQuery = query(
+        collection(db, "discussions", id, "comments"),
+        orderBy("createdAt", "asc")
+      );
+      onSnapshot(commentsQuery, (snapshot) => {
+        commentsEl.innerHTML = "";
+        console.log(`[listenComments] Received ${snapshot.size} comments`);
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const time = data.createdAt ? data.createdAt.toDate().toLocaleString() : "";
+          const div = document.createElement('div');
+          div.classList.add('comment');
+          div.innerHTML = `
+            <strong>${escapeHtml(data.commenterName || "Anonymous")}</strong><br/>
+            <p>${escapeHtml(data.comment)}</p>
+            <small style="color:#666;">${time}</small>
+          `;
+          commentsEl.appendChild(div);
+        });
+        commentsEl.scrollTop = commentsEl.scrollHeight;
+      });
+    }
+
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log("[commentForm] Submit event fired");
+
+      if (!currentUser || !discussionId) {
+        console.warn("[commentForm] User or discussionId missing, aborting comment post.");
+        return;
+      }
+
+      const commentText = commentInput.value.trim();
+      if (!commentText) {
+        console.warn("[commentForm] Empty comment text, aborting.");
+        return;
+      }
+
+      sendBtn.disabled = true;
+
+      try {
+        console.log(`[commentForm] Posting comment by user ${currentUser.uid}`);
+        console.log("Comment text:", commentText);
+
+        // Check ban status
+        const banDocRef = doc(db, "discussions", discussionId, "bans", currentUser.uid);
+        const banSnap = await getDoc(banDocRef);
+        if (banSnap.exists()) {
+          alert("You are banned from commenting in this discussion.");
+          sendBtn.disabled = false;
+          console.warn("[commentForm] User is banned from this discussion.");
+          return;
+        }
+
+        await addDoc(collection(db, "discussions", discussionId, "comments"), {
+          commenterUid: currentUser.uid,
+          commenterName: currentUser.displayName || currentUser.email || "Anonymous",
+          comment: commentText,
+          createdAt: serverTimestamp()
+        });
+
+        commentInput.value = "";
+        console.log("[commentForm] Comment posted successfully.");
+      } catch (err) {
+        console.error("[commentForm] Error posting comment:", err);
+        alert("Failed to post comment: " + err.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      console.log("[onAuthStateChanged] Auth state changed. User:", user);
+      currentUser = user;
+
+      if (!discussionId) {
+        await loadAllDiscussions();
+      } else {
+        if (user) {
+          loginMessage.style.display = "none";
+          console.log(`[onAuthStateChanged] User logged in: ${user.uid}. Loading discussion.`);
+          const loaded = await loadDiscussion(discussionId);
+          if (loaded) {
+            commentForm.style.display = "flex";
+            listenComments(discussionId);
+          }
+        } else {
+          console.warn("[onAuthStateChanged] No user logged in on discussion page. Redirecting...");
+          alert("Please login first by clicking a discussion on the list page.");
+          window.location.href = "discussion.html"; // Redirect to list for login
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>

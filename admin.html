@@ -207,12 +207,38 @@
     </form>
     <div id="articleMessage"></div>
   </section>
+<!-- DISCUSSION CREATION SECTION -->
+<section id="discussionSection">
+  <hr style="margin: 3rem 0; border-color: #444;" />
+  <h2 style="color: #fff;">Create Discussion Post</h2>
+  <form id="discussionForm">
+    <label style="color: #ccc;">Discussion Title:</label><br />
+    <input id="discussion-title" type="text" placeholder="e.g. What's the future of AI?" required
+      style="width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem;" />
+    <button type="submit"
+      style="padding: 0.6rem 1.2rem; background: #00ffff; color: black; border: none; border-radius: 5px; font-weight: bold;">
+      Submit Discussion
+    </button>
+  </form>
+  <div id="discussionMessage" style="margin-top: 0.5rem;"></div>
+</section>
+<section id="discussionBanSection">
+  <hr style="margin: 3rem 0; border-color: #444;" />
+  <h2>Manage Discussion Bans</h2>
+  <label for="discussionSelect">Select Discussion:</label><br/>
+  <select id="discussionSelect" style="max-width: 400px; width: 100%; margin-bottom: 1rem;">
+    <option value="">-- Select a Discussion --</option>
+  </select>
+
+  <div id="discussionUsersContainer"></div>
+</section>
 
 </div>
 
 <div id="noAccess" style="display:none; color:#f66; margin-top:2rem;">
   Access denied. You are not an admin.
 </div>
+
 
 <!-- Ace Editor CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.js" crossorigin="anonymous"></script>
@@ -226,28 +252,29 @@
     console.log("Safe Google API Key:", data.key);
   });
 
-  // Firebase imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    collection,
-    addDoc,
-    serverTimestamp,
-    query,
-    where,
-    getDocs,
-    updateDoc,
-    deleteDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  setDoc // ✅ ADDED this so setDoc is defined
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // Firebase config and initialization
   const firebaseConfig = {
@@ -552,6 +579,256 @@ async function sendPushNotification(title, body) {
     showPrintMargin: false,
     wrap: true
   });
+const discussionSelect = document.getElementById("discussionSelect");
+const discussionUsersContainer = document.getElementById("discussionUsersContainer");
+
+// Cache user comments to avoid multiple fetches
+const userCommentsCache = {};
+
+// Escape HTML helper to safely render comments
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Fetch all comments by a user across all discussions
+async function fetchUserComments(userId, discussionId) {
+  const comments = [];
+  try {
+    if (!discussionId) return comments;
+
+    const commentsRef = collection(db, "discussions", discussionId, "comments");
+    const q = query(commentsRef, where("commenterUid", "==", userId));
+    const commentsSnap = await getDocs(q);
+
+    commentsSnap.forEach(cDoc => {
+      const data = cDoc.data();
+      comments.push({
+        discussionId,
+        discussionTitle: null, // We already know the discussion, no need for title here
+        comment: data.comment,
+        createdAt: data.createdAt ? data.createdAt.toDate() : null,
+        commentId: cDoc.id
+      });
+    });
+  } catch (err) {
+    console.error("Error fetching user comments:", err);
+  }
+  return comments;
+}
+
+// Create user div with ban button and comment toggle
+function createUserDiv(name, uid, isBanned, banDocRef, discussionId) {
+  const userDiv = document.createElement("div");
+  userDiv.style.marginBottom = "1rem";
+  userDiv.style.padding = "0.5rem";
+  userDiv.style.border = "1px solid #00cccc";
+  userDiv.style.borderRadius = "6px";
+  userDiv.style.display = "flex";
+  userDiv.style.flexDirection = "column";
+  userDiv.style.backgroundColor = isBanned ? "#660000" : "#111";
+
+  // Header row (user name + ban button)
+  const headerRow = document.createElement("div");
+  headerRow.style.display = "flex";
+  headerRow.style.justifyContent = "space-between";
+  headerRow.style.alignItems = "center";
+  headerRow.style.cursor = "pointer";
+
+  const userInfo = document.createElement("span");
+  userInfo.textContent = `${name} (${uid})${isBanned ? " (BANNED)" : ""}`;
+  userInfo.style.flex = "1";
+
+  const banButton = document.createElement("button");
+  banButton.textContent = isBanned ? "Unban" : "Ban";
+  banButton.style.background = isBanned ? "#0f0" : "#f00";
+  banButton.style.color = "black";
+  banButton.style.fontWeight = "bold";
+  banButton.style.borderRadius = "5px";
+  banButton.style.cursor = "pointer";
+  banButton.style.marginLeft = "10px";
+
+  banButton.onclick = async (e) => {
+    e.stopPropagation(); // Prevent triggering toggle comments
+    try {
+      if (isBanned) {
+        await deleteDoc(banDocRef);
+      } else {
+        await setDoc(banDocRef, {
+          bannedAt: serverTimestamp(),
+          reason: "Banned by admin"
+        });
+      }
+      loadDiscussionUsers(discussionId);
+    } catch (error) {
+      alert("Error updating ban status: " + error.message);
+      console.error(error);
+    }
+  };
+
+  headerRow.appendChild(userInfo);
+  headerRow.appendChild(banButton);
+  userDiv.appendChild(headerRow);
+
+  // Comments container (hidden by default)
+  const commentsContainer = document.createElement("div");
+  commentsContainer.style.marginTop = "0.5rem";
+  commentsContainer.style.maxHeight = "200px";
+  commentsContainer.style.overflowY = "auto";
+  commentsContainer.style.borderTop = "1px solid #00cccc";
+  commentsContainer.style.paddingTop = "0.5rem";
+  commentsContainer.style.display = "none"; // hidden initially
+  userDiv.appendChild(commentsContainer);
+
+  // Toggle comments on header click
+headerRow.onclick = async () => {
+  if (commentsContainer.style.display === "none") {
+    commentsContainer.style.display = "block";
+    commentsContainer.innerHTML = "<em>Loading comments...</em>";
+
+    // Clear cache for this user & discussion combo or just fetch fresh each time:
+    // await fetch fresh comments only in this discussion:
+    const comments = await fetchUserComments(uid, discussionId);
+
+    if (comments.length === 0) {
+      commentsContainer.innerHTML = "<em>No comments found for this user in this discussion.</em>";
+    } else {
+      commentsContainer.innerHTML = "";
+      comments.forEach(c => {
+        const cDiv = document.createElement("div");
+        cDiv.style.marginBottom = "0.5rem";
+        cDiv.style.padding = "0.3rem";
+        cDiv.style.backgroundColor = "#222";
+        cDiv.style.borderRadius = "4px";
+
+        const dateStr = c.createdAt ? c.createdAt.toLocaleString() : "Unknown date";
+
+        cDiv.innerHTML = `<small>${dateStr}</small><br>
+                          <p>${escapeHtml(c.comment)}</p>`;
+        commentsContainer.appendChild(cDiv);
+      });
+    }
+  } else {
+    commentsContainer.style.display = "none";
+  }
+};
+
+  return userDiv;
+}
+
+// Load discussions into dropdown
+async function loadDiscussions() {
+  discussionSelect.innerHTML = '<option value="">-- Select a Discussion --</option>';
+  try {
+    const discussionsSnap = await getDocs(collection(db, "discussions"));
+    discussionsSnap.forEach(doc => {
+      const option = document.createElement("option");
+      option.value = doc.id;
+      option.textContent = doc.data().title || doc.id;
+      discussionSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error loading discussions:", err);
+  }
+}
+
+// Load users who commented on selected discussion and show ban status + buttons
+async function loadDiscussionUsers(discussionId) {
+  discussionUsersContainer.innerHTML = "Loading users...";
+  try {
+    const commentsRef = collection(db, "discussions", discussionId, "comments");
+    const commentsSnap = await getDocs(commentsRef);
+
+    // Map to store unique users with name
+    const userMap = new Map();
+    commentsSnap.forEach(commentDoc => {
+      const data = commentDoc.data();
+      const uid = data.commenterUid;
+      const name = data.commenterName || "Unknown";
+
+      if (uid && !userMap.has(uid)) {
+        userMap.set(uid, name);
+      }
+    });
+
+    if (userMap.size === 0) {
+      discussionUsersContainer.innerHTML = "<p>No users found commenting on this discussion.</p>";
+      return;
+    }
+
+    discussionUsersContainer.innerHTML = "";
+
+    for (const [uid, name] of userMap.entries()) {
+      const banDocRef = doc(db, "discussions", discussionId, "bans", uid);
+      const banDocSnap = await getDoc(banDocRef);
+      const isBanned = banDocSnap.exists();
+
+      // Create user div with comment toggle and ban button
+      const userDiv = createUserDiv(name, uid, isBanned, banDocRef, discussionId);
+
+      discussionUsersContainer.appendChild(userDiv);
+    }
+  } catch (err) {
+    discussionUsersContainer.innerHTML = "<p>Error loading users.</p>";
+    console.error("Error loading discussion users:", err);
+  }
+}
+
+// Event listener for dropdown change
+discussionSelect.addEventListener("change", (e) => {
+  const discussionId = e.target.value;
+  if (discussionId) {
+    loadDiscussionUsers(discussionId);
+  } else {
+    discussionUsersContainer.innerHTML = "";
+  }
+});
+
+// Load discussions after user is authenticated
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loadDiscussions();
+  }
+});
+
+// Discussion form submit handler
+const discussionForm = document.getElementById('discussionForm');
+const discussionMessage = document.getElementById('discussionMessage');
+
+discussionForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  discussionMessage.textContent = '';
+  discussionMessage.style.color = '';
+
+  const titleInput = document.getElementById('discussion-title');
+  const title = titleInput.value.trim();
+
+  if (!title) {
+    discussionMessage.style.color = 'red';
+    discussionMessage.textContent = 'Please enter a discussion title.';
+    return;
+  }
+
+  try {
+    // Add new discussion document with a timestamp
+    await addDoc(collection(db, "discussions"), {
+      title,
+      createdAt: serverTimestamp()
+    });
+
+    discussionMessage.style.color = 'limegreen';
+    discussionMessage.textContent = 'Discussion post created successfully!';
+    titleInput.value = '';
+
+    // Refresh discussion dropdown in ban management section
+    await loadDiscussions();
+  } catch (error) {
+    console.error("Error creating discussion:", error);
+    discussionMessage.style.color = 'red';
+    discussionMessage.textContent = 'Failed to create discussion: ' + error.message;
+  }
+});
 
 </script>
 
