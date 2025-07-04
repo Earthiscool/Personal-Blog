@@ -335,7 +335,7 @@
       measurementId: "G-3PEH6QWSWJ"
     };
 
-    // Initialize Firebase
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -356,7 +356,7 @@
     let isSignInMode = true;
     let isAuthStateResolved = false;
 
-    // Toggle between Sign In and Sign Up modes
+
     toggleAuthModeBtn.addEventListener('click', () => {
       isSignInMode = !isSignInMode;
       authSubmitBtn.textContent = isSignInMode ? 'Sign In' : 'Sign Up';
@@ -364,7 +364,6 @@
       authMessage.textContent = '';
     });
 
-    // Handle auth form submit
     authForm.addEventListener('submit', async e => {
       e.preventDefault();
       const email = authEmail.value.trim();
@@ -395,13 +394,12 @@
       }
     });
 
-    // Sign out button
+
     signOutBtn.addEventListener('click', () => {
       signOut(auth);
       console.log('User signed out');
     });
 
-    // Listen for auth state changes
     onAuthStateChanged(auth, user => {
       isAuthStateResolved = true;
       if (user) {
@@ -459,14 +457,13 @@
 
     window.addEventListener('resize', setupCanvas);
 
-    // Dark/light toggle
+
     const toggleBtn = document.getElementById('toggleThemeBtn');
     toggleBtn.addEventListener('click', () => {
       document.body.classList.toggle('light-mode');
       toggleBtn.textContent = document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
     });
 
-    // LocalStorage helpers
     function getLocalSubscribers() {
       try {
         const stored = localStorage.getItem('subscribers');
@@ -507,7 +504,6 @@
       return false;
     }
 
-    // Unified subscribers write function
     async function writeToSubscribers(email, source) {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -524,7 +520,7 @@
       return true;
     }
 
-    // Test subscribers write
+
     async function testSubscribersWrite() {
       if (!auth.currentUser) {
         newsletterMsg.textContent = 'You must be signed in to test.';
@@ -544,7 +540,7 @@
 
     testSubscribersBtn.addEventListener('click', testSubscribersWrite);
 
-    // Debug query function
+
     async function debugSubscribersQuery(email) {
       try {
         console.log('[DebugQuery] Checking subscribers for email:', email);
@@ -562,7 +558,7 @@
 
     window.debugSubscribersQuery = debugSubscribersQuery; // For Console testing
 
-    // Newsletter form handler
+
     newsletterForm.addEventListener('submit', async e => {
       e.preventDefault();
       const emailInput = document.getElementById('newsletterEmail');
@@ -597,7 +593,7 @@
         return;
       }
 
-      // Test write to testCollection
+
       try {
         console.log('Testing write to testCollection for UID:', auth.currentUser.uid);
         const testRef = doc(db, 'testCollection', 'testDoc');
@@ -618,7 +614,7 @@
 
       try {
         console.log('Checking Firestore for subscriber:', email);
-        // Temporarily bypass query to test write
+
         let isSubscribed = false;
         const bypassQuery = true; // Set to false to re-enable query
         if (!bypassQuery) {
@@ -659,7 +655,7 @@
       }
     });
 
-    // Test Firestore write
+
     async function testFirestoreWrite() {
       if (!auth.currentUser) {
         console.log('Skipping test write: user not authenticated');

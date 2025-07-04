@@ -73,7 +73,7 @@
 
 
 
-<!-- Existing Navigation -->
+
 <nav style="background:#111; padding:1rem; border-bottom:2px solid #00ffff; margin-bottom:2rem; position: relative;">
   <button id="navToggleBtn" style="display:none; position:absolute; top:1rem; right:1rem; background:none; border:none; color:#00ffff; font-size:2rem; cursor:pointer;">☰</button>
   <div id="navLinks" style="text-align:center;">
@@ -87,7 +87,7 @@
     
   </div>
 </nav>
-<!-- Firebase Compat SDK for Auth only -->
+
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 <script>
@@ -212,7 +212,7 @@
     📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
   </div>
 
-  <!-- Your other page content here -->
+  <!-- other page content here -->
 
   
 
@@ -224,7 +224,7 @@
 <h1>Let Dreamers Dream - Coding Projects</h1>
 <div id="projectsContainer"></div>
 
-<!-- Comment submission section -->
+
 <div class="commentBox">
   <h3>Leave a Comment</h3>
   <textarea id="commentText" placeholder="Write your comment here..." rows="4" style="width:100%;"></textarea><br><br>
@@ -286,7 +286,7 @@
     projectDiv.className = 'project';
 
     // Show project code as visible text block, so user can see it
-    // (optional: you can hide this if too long, or add toggle)
+    
     const escapedCode = data.code.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
 
     let urlLink = data.url ? `<a href="${data.url}" target="_blank" rel="noopener noreferrer" class="projectUrl">Open Project URL</a>` : "";

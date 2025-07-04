@@ -129,11 +129,11 @@
   <nav>
     <a href="index.html">Home</a>
     <a href="blog.html">Blog</a>
-    <a href="articles.html">Contact</a>
-    <a href="discussion.html">Editor</a>
-    <a href="articles.html">Course</a>
-    <a href="discussion.html">Article</a>
-    <a href="articles.html">Discussion</a>
+    <a href="contact.html">Contact</a>
+    <a href="editor.html">Editor</a>
+    <a href="course.html">Course</a>
+    <a href="articles.html">Article</a>
+    <a href="discussion.html">Discussion</a>
 
   </nav>
 
@@ -148,10 +148,10 @@
   style="margin-bottom: 1rem; padding: 0.5rem; font-size: 1rem; border-radius: 6px; border: none; width: 100%; max-width: 500px; align-self: center;"
 />
 
-  <!-- Container for all discussions list -->
+
   <div id="discussionsList" style="display:none;"></div>
 
-  <!-- Single discussion content -->
+
   <h2 id="discussionTitle" style="display:none;"></h2>
   <div id="comments" style="display:none;"></div>
 
@@ -181,7 +181,9 @@
       getDoc,
       onSnapshot,
       addDoc,
-      serverTimestamp
+      serverTimestamp,
+      updateDoc,
+      increment
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -282,7 +284,7 @@
         });
 
 
-        // Attach click listener to intercept link clicks for login before navigation
+ 
         discussionsList.addEventListener('click', async (e) => {
           const link = e.target.closest('a.discussion-link');
           if (!link) return;
@@ -304,7 +306,7 @@
             console.log("[discussionsList] User already logged in:", auth.currentUser.uid);
           }
 
-          // After login, navigate to discussion
+          
           window.location.href = link.href;
         });
 
@@ -395,7 +397,7 @@
         console.log(`[commentForm] Posting comment by user ${currentUser.uid}`);
         console.log("Comment text:", commentText);
 
-        // Check ban status
+        
         const banDocRef = doc(db, "discussions", discussionId, "bans", currentUser.uid);
         const banSnap = await getDoc(banDocRef);
         if (banSnap.exists()) {
@@ -410,7 +412,11 @@
           commenterName: currentUser.displayName || currentUser.email || "Anonymous",
           comment: commentText,
           createdAt: serverTimestamp()
+          
+          
         });
+        
+        
 
         commentInput.value = "";
         console.log("[commentForm] Comment posted successfully.");
