@@ -32,7 +32,6 @@
       }
     });
 
-    // Manually register Service Worker yourself — NOT via OneSignal SDK defaults
     try {
       const registration = await navigator.serviceWorker.register(
         "/Personal-Blog/OneSignalSDKWorker.js",
@@ -40,7 +39,6 @@
       );
       console.log("✅ Custom service worker registered", registration);
 
-      // Tell OneSignal to use the manually registered worker
       OneSignal.SERVICE_WORKER_PARAM = {
         scope: "/Personal-Blog/",
         registration: registration
@@ -53,50 +51,23 @@
   });
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <nav style="background:#111; padding:1rem; border-bottom:2px solid #00ffff; margin-bottom:2rem; position: relative;">
   <button id="navToggleBtn" style="display:none; position:absolute; top:1rem; right:1rem; background:none; border:none; color:#00ffff; font-size:2rem; cursor:pointer;">☰</button>
   <div id="navLinks" style="text-align:center;">
     <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
     <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
-    <a href="discussion.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Discussion</a>
-    
+    <a href="contact.html" id="navContact" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" id="navEditor" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" id="navCourse" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" id="navArticle" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="discussion.html" id="navDiscussion" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Discussion</a>
   </div>
 </nav>
 
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 <script>
-  fetch('/api/key')
-  .then(res => res.json())
-  .then(data => {
-    console.log("Safe Google API Key:", data.key);
-    // use data.key in a map, etc.
-  });
+  const isGuest = localStorage.getItem('guest') === 'true';
 
   const firebaseConfig = {
     apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
@@ -108,16 +79,37 @@
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+
   auth.onAuthStateChanged(user => {
-    if (!user) {
+    if (!user && !isGuest) {
+      // Not logged in and not guest → force login
       window.location.href = 'login.html';
     }
   });
+
+  if (isGuest) {
+    // Hide restricted nav links for guests
+    ['navDiscussion', 'navArticle', 'navCourse', 'navEditor', 'navContact'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+    // Hide comment box for guests
+    const commentBox = document.querySelector('.commentBox');
+    if (commentBox) commentBox.style.display = 'none';
+
+    // Also disable logout button for guests (optional)
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.style.display = 'none';
+  }
 </script>
 
 <button id="logoutBtn">Logout</button>
 <script>
   document.getElementById('logoutBtn').addEventListener('click', () => {
+    // Remove guest mode if any
+    localStorage.removeItem('guest');
+
     auth.signOut().then(() => {
       window.location.href = 'login.html';
     }).catch(err => {
@@ -224,7 +216,6 @@
 <h1>Let Dreamers Dream - Coding Projects</h1>
 <div id="projectsContainer"></div>
 
-
 <div class="commentBox">
   <h3>Leave a Comment</h3>
   <textarea id="commentText" placeholder="Write your comment here..." rows="4" style="width:100%;"></textarea><br><br>
@@ -253,9 +244,11 @@
   const db = getFirestore(app);
   const auth = getAuth(app);
 
+  const isGuest = localStorage.getItem('guest') === 'true';
+
   // Submit comment logic
   onAuthStateChanged(auth, user => {
-    if (user) {
+    if (user && !isGuest) {
       document.getElementById("submitComment").addEventListener("click", async () => {
         const text = document.getElementById("commentText").value.trim();
         if (!text) return alert("Comment cannot be empty.");
@@ -285,9 +278,11 @@
     const projectDiv = document.createElement('div');
     projectDiv.className = 'project';
 
-    // Show project code as visible text block, so user can see it
-    
-    const escapedCode = data.code.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+    // Escape HTML entities in code to show safely
+    const escapedCode = data.code
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
     let urlLink = data.url ? `<a href="${data.url}" target="_blank" rel="noopener noreferrer" class="projectUrl">Open Project URL</a>` : "";
 
@@ -310,25 +305,23 @@
     const downloadBtn = projectDiv.querySelector('.downloadBtn');
     const outputDiv = projectDiv.querySelector('.projectOutput');
 
-   runBtn.onclick = () => {
-  console.log("Run button clicked"); // Debug log
-  outputDiv.innerHTML = ''; // clear previous output
-  const iframe = document.createElement('iframe');
-  iframe.style.width = '100%';
-  iframe.style.height = '300px';
-  iframe.style.border = 'none';
-  outputDiv.appendChild(iframe);
+    runBtn.onclick = () => {
+      outputDiv.innerHTML = ''; // clear previous output
+      const iframe = document.createElement('iframe');
+      iframe.style.width = '100%';
+      iframe.style.height = '300px';
+      iframe.style.border = 'none';
+      outputDiv.appendChild(iframe);
 
-  try {
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(data.code)
-    doc.close();
-    console.log("Code written to iframe");
-  } catch (err) {
-    console.error("Error writing to iframe:", err);
-  }
-};
+      try {
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(data.code)
+        doc.close();
+      } catch (err) {
+        console.error("Error writing to iframe:", err);
+      }
+    };
 
     openBtn.onclick = () => {
       const newWindow = window.open();
@@ -349,7 +342,9 @@
 <!-- Python Runner Section -->
 <div style="margin-top: 3rem; border-top: 2px solid #00ffff; padding-top: 2rem;">
   <h2 style="color:#00ffff;">Try Python Code</h2>
-  <textarea id="pythonCode" rows="10" style="width:100%; background:#222; color:#0f0; font-family:monospace; border:1px solid #555;">print("Hello from Let Dreamers Dream!")</textarea><br><br>
+  <textarea id="pythonCode" rows="10" style="width:100%; background:#222; color:#0f0; font-family:monospace; border:1px solid #555;">print("Hello from Let Dreamers Dream!")
+    print("You are probably on the Guest Mode Screen when you clicked the Personal-Blog link just click the logout button")
+  </textarea><br><br>
   <button onclick="runPython()" style="margin-bottom:1rem;">Run Python</button>
   <pre id="pythonOutput" style="background:#111; color:#fff; border:1px solid #00cccc; padding:1rem; white-space:pre-wrap;"></pre>
 </div>
@@ -400,17 +395,17 @@
     navLinks.classList.toggle('show');
   });
 </script>
- <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-      if (isiOS && !isStandalone) {
-        document.getElementById('iosBanner').style.display = 'block';
-      }
-    });
-  </script>
- <script>
+    if (isiOS && !isStandalone) {
+      document.getElementById('iosBanner').style.display = 'block';
+    }
+  });
+</script>
+<script>
   function isLikelyIPadOS() {
     return navigator.userAgent.includes("Macintosh") && 'ontouchend' in document;
   }
@@ -472,6 +467,41 @@
     }
   });
 </script>
+<script>
+  function isIos() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function isInStandaloneMode() {
+    return ('standalone' in window.navigator) && window.navigator.standalone;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const popupShown = localStorage.getItem('hideIosPopup');
+    const popup = document.getElementById('iosPopup');
+    const dismissBtn = document.getElementById('dismissIosPopup');
+
+    if (isIos() && !isInStandaloneMode() && !popupShown) {
+      popup.style.display = 'block';
+    }
+
+    dismissBtn.addEventListener('click', () => {
+      popup.style.display = 'none';
+      localStorage.setItem('hideIosPopup', 'true');
+    });
+  });
+</script>
+<div id="iosPopup" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:#fff; color:#000; padding:1rem; border-radius:12px; max-width:320px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:9999;">
+  <p style="margin-top:0;">📱 Want faster access? Add this app to your iPhone’s Home Screen!</p>
+  <video controls playsinline muted autoplay loop width="100%" style="border-radius:10px;">
+    <source src="Demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <button id="dismissIosPopup" style="margin-top:0.5rem; background:#000; color:#fff; padding:0.5rem 1rem; border:none; border-radius:6px; cursor:pointer;">
+    Don’t show again
+  </button>
+</div>
 
 </body>
 </html>

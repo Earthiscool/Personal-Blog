@@ -18,68 +18,68 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    document.body.style.display = 'none';
+    document.body.style.display = 'none'; // hide until auth checked
   </script>
-  <head>
-<title>Projects - Let Dreamers Dream</title>
-
-<link rel="manifest" href="/Personal-Blog/manifest.json" />
-<meta name="theme-color" content="#111111" />
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Let Dreamers Dream">
-<link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg">
-
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
-      autoRegister: false,
-      notifyButton: { enable: true },
-      serviceWorkerParam: {
-        scope: "/Personal-Blog/"
-      },
-      welcomeNotification: {
-        url: "https://earthiscool.github.io/Personal-Blog/"
-      }
-    });
-
-    try {
-      const registration = await navigator.serviceWorker.register(
-        "/Personal-Blog/OneSignalSDKWorker.js",
-        { scope: "/Personal-Blog/" }
-      );
-      console.log("✅ Custom service worker registered", registration);
-
-      OneSignal.SERVICE_WORKER_PARAM = {
-        scope: "/Personal-Blog/",
-        registration: registration
-      };
-
-      await OneSignal.Notifications.requestPermission();
-    } catch (error) {
-      console.error("❌ Custom service worker registration failed:", error);
-    }
-  });
-</script>
-</head>
 
   <title>Let Dreamers Dream – Blog</title>
+
+  <link rel="manifest" href="/Personal-Blog/manifest.json" />
+  <meta name="theme-color" content="#111111" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Let Dreamers Dream" />
+  <link rel="apple-touch-icon" href="https://starwalk.space/gallery/images/what-is-space/1140x641.jpg" />
+
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "5afa549f-3762-4231-8ec6-6a98798aea66",
+        autoRegister: false,
+        notifyButton: { enable: true },
+        serviceWorkerParam: {
+          scope: "/Personal-Blog/",
+        },
+        welcomeNotification: {
+          url: "https://earthiscool.github.io/Personal-Blog/",
+        },
+      });
+
+      try {
+        const registration = await navigator.serviceWorker.register(
+          "/Personal-Blog/OneSignalSDKWorker.js",
+          { scope: "/Personal-Blog/" }
+        );
+        console.log("✅ Custom service worker registered", registration);
+
+        OneSignal.SERVICE_WORKER_PARAM = {
+          scope: "/Personal-Blog/",
+          registration: registration,
+        };
+
+        await OneSignal.Notifications.requestPermission();
+      } catch (error) {
+        console.error("❌ Custom service worker registration failed:", error);
+      }
+    });
+  </script>
+
   <style>
     body {
       background: #111;
       color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0; padding: 2rem;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 2rem;
     }
     body.light-mode {
       background: #f7f7f7;
       color: #222;
     }
-    h1, h2 {
+    h1,
+    h2 {
       color: #00ffff;
     }
     header {
@@ -115,7 +115,9 @@
     .comment strong {
       color: #00ffff;
     }
-    input, textarea, button {
+    input,
+    textarea,
+    button {
       font-size: 1rem;
       margin-top: 0.5rem;
       display: block;
@@ -150,19 +152,29 @@
   </style>
 </head>
 <body>
-  <div id="iosBanner" style="
-    display:none;
-    background:#111;
-    color:white;
-    padding:10px;
-    text-align:center;
-    position:fixed;
-    bottom:0;
-    width:100%;
-    z-index:9999;
-    font-size:0.9rem;
-  ">
-    📱 To get notifications, tap <strong>Share</strong> then <strong>Add to Home Screen and then go to Blog Section and Click Enable Notifications. DO NOT GO TO ANY OTHER SECTION AND CLICK ENABLE NOTIFICATIONS IT WONT WORK FROM THERE. YOU WILL SEE A POPUP FROM LLD AND CLICK ALLOW</strong>.
+  <div
+    id="iosBanner"
+    style="
+      display: none;
+      background: #111;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 9999;
+      font-size: 0.9rem;
+    "
+  >
+    📱 To get notifications, tap
+    <strong
+      >Share</strong
+    >
+    then
+    <strong
+      >Add to Home Screen and then go to Blog Section and Click Enable Notifications. DO NOT GO TO ANY OTHER SECTION AND CLICK ENABLE NOTIFICATIONS IT WONT WORK FROM THERE. YOU WILL SEE A POPUP FROM LLD AND CLICK ALLOW</strong
+    >.
   </div>
 
   <header>
@@ -173,43 +185,56 @@
   <nav>
     <a href="index.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Projects</a>
     <a href="blog.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Blog</a>
-    <a href="contact.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
-    <a href="editor.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
-    <a href="course.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
-    <a href="articles.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
-    <a href="discussion.html" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Discussion</a>
+    <a href="contact.html" id="navContact" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Contact</a>
+    <a href="editor.html" id="navEditor" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Editor</a>
+    <a href="course.html" id="navCourse" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Course</a>
+    <a href="articles.html" id="navArticle" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Article</a>
+    <a href="discussion.html" id="navDiscussion" style="color:#00ffff; margin:0 1rem; font-weight:bold; text-decoration:none;">Discussion</a>
   </nav>
 
-  <button id="logoutBtn" style="background: #00ffff; color: black; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; padding: 0.5rem 1rem; margin: 1rem;">Logout</button>
+  <button
+    id="logoutBtn"
+    style="
+      background: #00ffff;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      margin: 1rem;
+    "
+  >
+    Logout
+  </button>
   <button onclick="enablePush()">Enable Notifications</button>
 
   <script>
     async function enablePush() {
       try {
         const permission = await OneSignal.Notifications.requestPermission();
-        console.log('Push permission result:', permission);
-        if (permission === 'granted') {
+        console.log("Push permission result:", permission);
+        if (permission === "granted") {
           await OneSignal.registerForPushNotifications();
-          console.log('User subscribed to push notifications');
+          console.log("User subscribed to push notifications");
         } else {
-          console.log('User denied push permission or dismissed prompt');
+          console.log("User denied push permission or dismissed prompt");
         }
       } catch (e) {
-        console.error('Error requesting push permission', e);
+        console.error("Error requesting push permission", e);
       }
     }
   </script>
 
-  <input type="search" id="searchBar" placeholder="Search blog posts..." aria-label="Search blog posts" />
+  <input
+    type="search"
+    id="searchBar"
+    placeholder="Search blog posts..."
+    aria-label="Search blog posts"
+  />
   <div id="postsContainer"></div>
 
   <script type="module">
-    fetch('/api/key')
-    .then(res => res.json())
-    .then(data => {
-      console.log("Safe Google API Key:", data.key);
-    });
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import {
       getFirestore,
@@ -218,14 +243,9 @@
       addDoc,
       serverTimestamp,
       query,
-      orderBy
+      orderBy,
     } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithPopup,
-      GoogleAuthProvider
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
@@ -233,107 +253,136 @@
       projectId: "letdreamersdream",
       storageBucket: "letdreamersdream.appspot.com",
       messagingSenderId: "769338292042",
-      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+      appId: "1:769338292042:web:d12a229145acb0e575f3b3",
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
 
     const postsContainer = document.getElementById("postsContainer");
     const searchBar = document.getElementById("searchBar");
 
-    function renderPosts(posts) {
-      postsContainer.innerHTML = '';
-      posts.forEach(post => {
-        const article = document.createElement('article');
-        article.className = 'blog-post';
+    const isGuest = localStorage.getItem("guest") === "true";
+
+    // Hide restricted nav links for guests
+    if (isGuest) {
+      ["navDiscussion", "navArticle", "navCourse", "navEditor", "navContact"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+      // Hide logout button (optional)
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) logoutBtn.style.display = "none";
+    }
+
+    function renderPosts(posts, userLoggedIn) {
+      postsContainer.innerHTML = "";
+      posts.forEach((post) => {
+        const article = document.createElement("article");
+        article.className = "blog-post";
+
+        // Comment form disabled for guests (userLoggedIn = false)
+        const commentFormHtml = userLoggedIn
+          ? `
+          <form data-post-id="${post.id}">
+            <input type="text" name="commenter" placeholder="Your Name" required />
+            <textarea name="comment" rows="3" placeholder="Your comment..." required></textarea>
+            <button type="submit">Add Comment</button>
+          </form>
+        `
+          : `<p style="color:#ff4444; font-weight:bold;">Log in to add comments.</p>`;
+
         article.innerHTML = `
           <h3>${post.title}</h3>
           <p>${post.content}</p>
           <div class="comments-section">
             <h4>Comments</h4>
             <div id="comments-${post.id}"></div>
-            <form data-post-id="${post.id}">
-              <input type="text" name="commenter" placeholder="Your Name" required />
-              <textarea name="comment" rows="3" placeholder="Your comment..." required></textarea>
-              <button type="submit">Add Comment</button>
-            </form>
+            ${commentFormHtml}
           </div>
         `;
         postsContainer.appendChild(article);
         loadComments(post.id);
-        const form = article.querySelector('form');
 
-        form.addEventListener('submit', async e => {
-          e.preventDefault();
-          const name = form.commenter.value.trim();
-          const comment = form.comment.value.trim();
-          const postId = form.dataset.postId;
+        if (userLoggedIn) {
+          const form = article.querySelector("form");
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = form.commenter.value.trim();
+            const comment = form.comment.value.trim();
+            const postId = form.dataset.postId;
+            if (!name || !comment) return;
 
-          if (!name || !comment) return;
-
-          try {
-            await addDoc(collection(db, "posts", postId, "comments"), {
-              commenter: name,
-              comment: comment,
-              createdAt: serverTimestamp(),
-              approved: false
-            });
-            form.reset();
-            loadComments(postId);
-          } catch (err) {
-            alert("Failed to add comment: " + err.message);
-          }
-        });
+            try {
+              await addDoc(collection(db, "posts", postId, "comments"), {
+                commenter: name,
+                comment: comment,
+                createdAt: serverTimestamp(),
+                approved: false,
+              });
+              form.reset();
+              loadComments(postId);
+            } catch (err) {
+              alert("Failed to add comment: " + err.message);
+            }
+          });
+        }
       });
     }
 
     async function loadComments(postId) {
       const commentsDiv = document.getElementById(`comments-${postId}`);
-      commentsDiv.innerHTML = '';
-      const snap = await getDocs(query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc")));
-      snap.forEach(doc => {
+      commentsDiv.innerHTML = "";
+      const snap = await getDocs(
+        query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"))
+      );
+      snap.forEach((doc) => {
         const { commenter, comment, approved } = doc.data();
         if (!approved) return;
-        const div = document.createElement('div');
-        div.className = 'comment';
+        const div = document.createElement("div");
+        div.className = "comment";
         div.innerHTML = `<strong>${commenter}</strong>: ${comment}`;
         commentsDiv.appendChild(div);
       });
     }
 
-    async function loadPosts() {
-      postsContainer.innerHTML = '';
+    async function loadPosts(userLoggedIn) {
+      postsContainer.innerHTML = "";
       const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
       const posts = [];
 
-      snapshot.forEach(docSnap => {
+      snapshot.forEach((docSnap) => {
         posts.push({ id: docSnap.id, ...docSnap.data() });
       });
 
-      renderPosts(posts);
+      renderPosts(posts, userLoggedIn);
 
       searchBar.addEventListener("input", () => {
         const term = searchBar.value.toLowerCase();
-        const filtered = posts.filter(p =>
-          p.title.toLowerCase().includes(term) ||
-          p.content.toLowerCase().includes(term) ||
-          p.category?.toLowerCase().includes(term)
+        const filtered = posts.filter(
+          (p) =>
+            p.title.toLowerCase().includes(term) ||
+            p.content.toLowerCase().includes(term) ||
+            p.category?.toLowerCase().includes(term)
         );
-        renderPosts(filtered);
+        renderPosts(filtered, userLoggedIn);
       });
     }
 
     onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
-        document.body.style.display = 'block';
-        loadPosts();
+        // Logged in user
+        document.body.style.display = "block";
+        loadPosts(true);
+      } else if (isGuest) {
+        // Guest user
+        document.body.style.display = "block";
+        loadPosts(false);
       } else {
         alert("Please sign in to view the blog.");
-        window.location.href = 'login.html';
+        window.location.href = "login.html";
       }
     });
   </script>
@@ -341,38 +390,46 @@
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
 
       if (isiOS && !isStandalone) {
-        document.getElementById('iosBanner').style.display = 'block';
+        document.getElementById("iosBanner").style.display = "block";
       }
     });
   </script>
   <script>
-  function isLikelyIPadOS() {
-    return navigator.userAgent.includes("Macintosh") && 'ontouchend' in document;
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const banner = document.getElementById('iosBanner');
-
-    if (isLikelyIPadOS()) {
-      banner.style.display = 'block';
-      banner.textContent = ' shriek On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.';
-    } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
-      banner.style.display = 'block';
-      banner.textContent = '📱 Tap Share → Add to Home Screen to enable notifications. Then go to Blog and Click Enable Notifications';
+    function isLikelyIPadOS() {
+      return navigator.userAgent.includes("Macintosh") && "ontouchend" in document;
     }
-  });
-</script>
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const banner = document.getElementById("iosBanner");
+
+      if (isLikelyIPadOS()) {
+        banner.style.display = "block";
+        banner.textContent =
+          "📱 On iPad? Tap Share → Add to Home Screen to enable notifications. Then go to Blog and click Enable Notifications.";
+      } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
+        banner.style.display = "block";
+        banner.textContent =
+          "📱 Tap Share → Add to Home Screen to enable notifications. Then go to Blog and Click Enable Notifications";
+      }
+    });
+  </script>
   <script>
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      firebase.auth().signOut().then(() => {
-        window.location.href = 'login.html';
-      }).catch(err => {
-        console.error('Logout failed:', err);
-        alert('Logout failed, check console.');
-      });
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("guest"); // remove guest flag on logout
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          window.location.href = "login.html";
+        })
+        .catch((err) => {
+          console.error("Logout failed:", err);
+          alert("Logout failed, check console.");
+        });
     });
   </script>
 </body>

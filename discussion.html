@@ -120,6 +120,12 @@
       font-style: italic;
       color: #f66;
     }
+    .comment-count {
+  font-size: 0.9rem;
+  color: #0aa;
+  margin-left: 1rem;
+  white-space: nowrap;
+}
     
   </style>
   
@@ -162,295 +168,303 @@
 
   <div id="loginMessage">You must be logged in to view and post comments.</div>
 
-  <script type="module">
+<script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithPopup,
-      GoogleAuthProvider
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      query,
-      orderBy,
-      getDocs,
-      doc,
-      getDoc,
-      onSnapshot,
-      addDoc,
-      serverTimestamp,
-      updateDoc,
-      increment
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithPopup,
+    GoogleAuthProvider
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    query,
+    orderBy,
+    getDocs,
+    doc,
+    getDoc,
+    onSnapshot,
+    addDoc,
+    serverTimestamp,
+    updateDoc,
+    increment
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
-      authDomain: "letdreamersdream.firebaseapp.com",
-      projectId: "letdreamersdream",
-      storageBucket: "letdreamersdream.appspot.com",
-      messagingSenderId: "769338292042",
-      appId: "1:769338292042:web:d12a229145acb0e575f3b3"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQrNsPNukoQEaDeiX4mvFqy9qGzqaIg7Q",
+    authDomain: "letdreamersdream.firebaseapp.com",
+    projectId: "letdreamersdream",
+    storageBucket: "letdreamersdream.appspot.com",
+    messagingSenderId: "769338292042",
+    appId: "1:769338292042:web:d12a229145acb0e575f3b3"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-    const pageTitle = document.getElementById('pageTitle');
-    const loadingMessage = document.getElementById('loadingMessage');
-    const errorMessage = document.getElementById('errorMessage');
+  const pageTitle = document.getElementById('pageTitle');
+  const loadingMessage = document.getElementById('loadingMessage');
+  const errorMessage = document.getElementById('errorMessage');
 
-    const discussionsList = document.getElementById('discussionsList');
-    const discussionTitleEl = document.getElementById('discussionTitle');
-    const commentsEl = document.getElementById('comments');
-    const commentForm = document.getElementById('commentForm');
-    const commentInput = document.getElementById('commentInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const loginMessage = document.getElementById('loginMessage');
+  const discussionsList = document.getElementById('discussionsList');
+  const discussionTitleEl = document.getElementById('discussionTitle');
+  const commentsEl = document.getElementById('comments');
+  const commentForm = document.getElementById('commentForm');
+  const commentInput = document.getElementById('commentInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const loginMessage = document.getElementById('loginMessage');
 
-    const params = new URLSearchParams(window.location.search);
-    const discussionId = params.get('id');
-    let currentUser = null;
+  const params = new URLSearchParams(window.location.search);
+  const discussionId = params.get('id');
+  let currentUser = null;
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  async function fetchCommentCount(discussionDocId) {
+    try {
+      const commentsRef = collection(db, "discussions", discussionDocId, "comments");
+      const commentsSnapshot = await getDocs(commentsRef);
+      return commentsSnapshot.size; // number of comments
+    } catch (e) {
+      console.error("Error fetching comment count:", e);
+      return 0;
     }
+  }
 
-    async function loadAllDiscussions() {
-      pageTitle.textContent = "All Discussions";
-      discussionsList.style.display = 'block';
-      loadingMessage.textContent = "Loading discussions...";
-      errorMessage.style.display = "none";
+  async function loadAllDiscussions() {
+    pageTitle.textContent = "All Discussions";
+    discussionsList.style.display = 'block';
+    loadingMessage.textContent = "Loading discussions...";
+    errorMessage.style.display = "none";
 
-      try {
-        const discussionsRef = collection(db, "discussions");
-        const q = query(discussionsRef, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+    try {
+      const discussionsRef = collection(db, "discussions");
+      const q = query(discussionsRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
 
-        loadingMessage.style.display = "none";
+      loadingMessage.style.display = "none";
 
-        if (querySnapshot.empty) {
-          discussionsList.textContent = "No discussions found.";
+      if (querySnapshot.empty) {
+        discussionsList.textContent = "No discussions found.";
+        return;
+      }
+
+      discussionsList.innerHTML = "";
+
+      const allDiscussions = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const id = doc.id;
+        const title = data.title || "Untitled Discussion";
+
+        allDiscussions.push({ id, title });
+      });
+
+      // Changed this function to async with await inside
+      async function renderFilteredDiscussions(filterText = "") {
+        discussionsList.innerHTML = "";
+        const filtered = allDiscussions.filter(d =>
+          d.title.toLowerCase().includes(filterText.toLowerCase())
+        );
+
+        if (filtered.length === 0) {
+          discussionsList.innerHTML = "<p>No discussions found.</p>";
           return;
         }
 
-        discussionsList.innerHTML = "";
+        for (const { id, title } of filtered) {
+          const div = document.createElement('div');
+          div.classList.add('discussion-item');
 
-        const allDiscussions = [];
+          const link = document.createElement('a');
+          link.classList.add('discussion-link');
+          link.href = `discussion.html?id=${encodeURIComponent(id)}`;
 
-        querySnapshot.forEach(doc => {
-          const data = doc.data();
-          const id = doc.id;
-          const title = data.title || "Untitled Discussion";
+          // Await comment count for each discussion
+          const count = await fetchCommentCount(id);
+          link.textContent = `${title} (${count} comment${count !== 1 ? 's' : ''})`;
 
-          allDiscussions.push({ id, title });
-        });
+          div.appendChild(link);
+          discussionsList.appendChild(div);
+        }
+      }
 
-        function renderFilteredDiscussions(filterText = "") {
-          discussionsList.innerHTML = "";
-          const filtered = allDiscussions.filter(d =>
-            d.title.toLowerCase().includes(filterText.toLowerCase())
-          );
+      // Await this call now
+      await renderFilteredDiscussions();
 
-          if (filtered.length === 0) {
-            discussionsList.innerHTML = "<p>No discussions found.</p>";
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', async () => {
+        await renderFilteredDiscussions(searchInput.value);
+      });
+
+      discussionsList.addEventListener('click', async (e) => {
+        const link = e.target.closest('a.discussion-link');
+        if (!link) return;
+        e.preventDefault();
+
+        console.log("[discussionsList] Discussion link clicked:", link.href);
+
+        if (!auth.currentUser) {
+          console.log("[discussionsList] No user logged in, starting login flow...");
+          try {
+            await signInWithPopup(auth, provider);
+            console.log("[discussionsList] Login successful:", auth.currentUser.uid);
+          } catch (err) {
+            console.error("[discussionsList] Login failed or cancelled", err);
+            alert("Login required to view discussions.");
             return;
           }
-
-          filtered.forEach(({ id, title }) => {
-            const div = document.createElement('div');
-            div.classList.add('discussion-item');
-
-            const link = document.createElement('a');
-            link.classList.add('discussion-link');
-            link.href = `discussion.html?id=${encodeURIComponent(id)}`;
-            link.textContent = title;
-
-            div.appendChild(link);
-            discussionsList.appendChild(div);
-          });
+        } else {
+          console.log("[discussionsList] User already logged in:", auth.currentUser.uid);
         }
 
-        renderFilteredDiscussions();
+        window.location.href = link.href;
+      });
 
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', () => {
-          renderFilteredDiscussions(searchInput.value);
-        });
-
-
- 
-        discussionsList.addEventListener('click', async (e) => {
-          const link = e.target.closest('a.discussion-link');
-          if (!link) return;
-          e.preventDefault();
-
-          console.log("[discussionsList] Discussion link clicked:", link.href);
-
-          if (!auth.currentUser) {
-            console.log("[discussionsList] No user logged in, starting login flow...");
-            try {
-              await signInWithPopup(auth, provider);
-              console.log("[discussionsList] Login successful:", auth.currentUser.uid);
-            } catch (err) {
-              console.error("[discussionsList] Login failed or cancelled", err);
-              alert("Login required to view discussions.");
-              return;
-            }
-          } else {
-            console.log("[discussionsList] User already logged in:", auth.currentUser.uid);
-          }
-
-          
-          window.location.href = link.href;
-        });
-
-      } catch (error) {
-        loadingMessage.style.display = "none";
-        errorMessage.style.display = "block";
-        errorMessage.textContent = "Error loading discussions: " + error.message;
-        console.error(error);
-      }
+    } catch (error) {
+      loadingMessage.style.display = "none";
+      errorMessage.style.display = "block";
+      errorMessage.textContent = "Error loading discussions: " + error.message;
+      console.error(error);
     }
+  }
 
-    async function loadDiscussion(id) {
-      pageTitle.textContent = "Discussion Thread";
-      loadingMessage.style.display = "block";
-      try {
-        console.log("[loadDiscussion] Start loading discussion with ID:", id);
-        const docRef = doc(db, "discussions", id);
-        const docSnap = await getDoc(docRef);
+  async function loadDiscussion(id) {
+    pageTitle.textContent = "Discussion Thread";
+    loadingMessage.style.display = "block";
+    try {
+      console.log("[loadDiscussion] Start loading discussion with ID:", id);
+      const docRef = doc(db, "discussions", id);
+      const docSnap = await getDoc(docRef);
 
-        loadingMessage.style.display = "none";
+      loadingMessage.style.display = "none";
 
-        if (!docSnap.exists()) {
-          errorMessage.style.display = "block";
-          errorMessage.textContent = "Discussion not found.";
-          console.warn("[loadDiscussion] Discussion not found:", id);
-          return false;
-        }
-
-        const data = docSnap.data();
-        discussionTitleEl.textContent = data.title || "Untitled Discussion";
-        discussionTitleEl.style.display = "block";
-        commentsEl.style.display = "block";
-
-        console.log("[loadDiscussion] Loaded discussion title:", discussionTitleEl.textContent);
-        return true;
-      } catch (error) {
-        loadingMessage.style.display = "none";
+      if (!docSnap.exists()) {
         errorMessage.style.display = "block";
-        errorMessage.textContent = "Error loading discussion: " + error.message;
-        console.error("[loadDiscussion] Error loading discussion:", error);
+        errorMessage.textContent = "Discussion not found.";
+        console.warn("[loadDiscussion] Discussion not found:", id);
         return false;
       }
-    }
 
-    function listenComments(id) {
-      console.log("[listenComments] Start listening to comments for discussion:", id);
-      const commentsQuery = query(
-        collection(db, "discussions", id, "comments"),
-        orderBy("createdAt", "asc")
-      );
-      onSnapshot(commentsQuery, (snapshot) => {
-        commentsEl.innerHTML = "";
-        console.log(`[listenComments] Received ${snapshot.size} comments`);
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const time = data.createdAt ? data.createdAt.toDate().toLocaleString() : "";
-          const div = document.createElement('div');
-          div.classList.add('comment');
-          div.innerHTML = `
-            <strong>${escapeHtml(data.commenterName || "Anonymous")}</strong><br/>
-            <p>${escapeHtml(data.comment)}</p>
-            <small style="color:#666;">${time}</small>
-          `;
-          commentsEl.appendChild(div);
-        });
-        commentsEl.scrollTop = commentsEl.scrollHeight;
+      const data = docSnap.data();
+      discussionTitleEl.textContent = data.title || "Untitled Discussion";
+      discussionTitleEl.style.display = "block";
+      commentsEl.style.display = "block";
+
+      console.log("[loadDiscussion] Loaded discussion title:", discussionTitleEl.textContent);
+      return true;
+    } catch (error) {
+      loadingMessage.style.display = "none";
+      errorMessage.style.display = "block";
+      errorMessage.textContent = "Error loading discussion: " + error.message;
+      console.error("[loadDiscussion] Error loading discussion:", error);
+      return false;
+    }
+  }
+
+  function listenComments(id) {
+    console.log("[listenComments] Start listening to comments for discussion:", id);
+    const commentsQuery = query(
+      collection(db, "discussions", id, "comments"),
+      orderBy("createdAt", "asc")
+    );
+    onSnapshot(commentsQuery, (snapshot) => {
+      commentsEl.innerHTML = "";
+      console.log(`[listenComments] Received ${snapshot.size} comments`);
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const time = data.createdAt ? data.createdAt.toDate().toLocaleString() : "";
+        const div = document.createElement('div');
+        div.classList.add('comment');
+        div.innerHTML = `
+          <strong>${escapeHtml(data.commenterName || "Anonymous")}</strong><br/>
+          <p>${escapeHtml(data.comment)}</p>
+          <small style="color:#666;">${time}</small>
+        `;
+        commentsEl.appendChild(div);
       });
+      commentsEl.scrollTop = commentsEl.scrollHeight;
+    });
+  }
+
+  commentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log("[commentForm] Submit event fired");
+
+    if (!currentUser || !discussionId) {
+      console.warn("[commentForm] User or discussionId missing, aborting comment post.");
+      return;
     }
 
-    commentForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      console.log("[commentForm] Submit event fired");
+    const commentText = commentInput.value.trim();
+    if (!commentText) {
+      console.warn("[commentForm] Empty comment text, aborting.");
+      return;
+    }
 
-      if (!currentUser || !discussionId) {
-        console.warn("[commentForm] User or discussionId missing, aborting comment post.");
-        return;
-      }
+    sendBtn.disabled = true;
 
-      const commentText = commentInput.value.trim();
-      if (!commentText) {
-        console.warn("[commentForm] Empty comment text, aborting.");
-        return;
-      }
+    try {
+      console.log(`[commentForm] Posting comment by user ${currentUser.uid}`);
+      console.log("Comment text:", commentText);
 
-      sendBtn.disabled = true;
-
-      try {
-        console.log(`[commentForm] Posting comment by user ${currentUser.uid}`);
-        console.log("Comment text:", commentText);
-
-        
-        const banDocRef = doc(db, "discussions", discussionId, "bans", currentUser.uid);
-        const banSnap = await getDoc(banDocRef);
-        if (banSnap.exists()) {
-          alert("You are banned from commenting in this discussion.");
-          sendBtn.disabled = false;
-          console.warn("[commentForm] User is banned from this discussion.");
-          return;
-        }
-
-        await addDoc(collection(db, "discussions", discussionId, "comments"), {
-          commenterUid: currentUser.uid,
-          commenterName: currentUser.displayName || currentUser.email || "Anonymous",
-          comment: commentText,
-          createdAt: serverTimestamp()
-          
-          
-        });
-        
-        
-
-        commentInput.value = "";
-        console.log("[commentForm] Comment posted successfully.");
-      } catch (err) {
-        console.error("[commentForm] Error posting comment:", err);
-        alert("Failed to post comment: " + err.message);
-      } finally {
+      const banDocRef = doc(db, "discussions", discussionId, "bans", currentUser.uid);
+      const banSnap = await getDoc(banDocRef);
+      if (banSnap.exists()) {
+        alert("You are banned from commenting in this discussion.");
         sendBtn.disabled = false;
+        console.warn("[commentForm] User is banned from this discussion.");
+        return;
       }
-    });
 
-    onAuthStateChanged(auth, async (user) => {
-      console.log("[onAuthStateChanged] Auth state changed. User:", user);
-      currentUser = user;
+      await addDoc(collection(db, "discussions", discussionId, "comments"), {
+        commenterUid: currentUser.uid,
+        commenterName: currentUser.displayName || currentUser.email || "Anonymous",
+        comment: commentText,
+        createdAt: serverTimestamp()
+      });
 
-      if (!discussionId) {
-        await loadAllDiscussions();
-      } else {
-        if (user) {
-          loginMessage.style.display = "none";
-          console.log(`[onAuthStateChanged] User logged in: ${user.uid}. Loading discussion.`);
-          const loaded = await loadDiscussion(discussionId);
-          if (loaded) {
-            commentForm.style.display = "flex";
-            listenComments(discussionId);
-          }
-        } else {
-          console.warn("[onAuthStateChanged] No user logged in on discussion page. Redirecting...");
-          alert("Please login first by clicking a discussion on the list page.");
-          window.location.href = "discussion.html"; // Redirect to list for login
+      commentInput.value = "";
+      console.log("[commentForm] Comment posted successfully.");
+    } catch (err) {
+      console.error("[commentForm] Error posting comment:", err);
+      alert("Failed to post comment: " + err.message);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    console.log("[onAuthStateChanged] Auth state changed. User:", user);
+    currentUser = user;
+
+    if (!discussionId) {
+      await loadAllDiscussions();
+    } else {
+      if (user) {
+        loginMessage.style.display = "none";
+        console.log(`[onAuthStateChanged] User logged in: ${user.uid}. Loading discussion.`);
+        const loaded = await loadDiscussion(discussionId);
+        if (loaded) {
+          commentForm.style.display = "flex";
+          listenComments(discussionId);
         }
+      } else {
+        console.warn("[onAuthStateChanged] No user logged in on discussion page. Redirecting...");
+        alert("Please login first by clicking a discussion on the list page.");
+        window.location.href = "discussion.html"; // Redirect to list for login
       }
-    });
+    }
+  });
 
-  </script>
+</script>
+
 </body>
 </html>

@@ -20,6 +20,7 @@
       display: flex;
       align-items: center;
       gap: 2rem;
+      flex-direction: column;
     }
 
     .instruction-box {
@@ -30,6 +31,7 @@
       font-weight: bold;
       max-width: 250px;
       font-size: 0.9rem;
+      margin-bottom: 1rem;
     }
 
     .auth-box {
@@ -62,6 +64,12 @@
     #submitBtn {
       background: #00bcd4;
       color: #000;
+    }
+
+    #guestBtn {
+      background: #777;
+      color: #fff;
+      margin-top: 0.8rem;
     }
 
     #toggle {
@@ -116,7 +124,7 @@
   <div class="container">
     <div class="instruction-box">
       To Signup:<br />
-      You must click the sign-up button twice and ignore the error. Go to the login button and click login. Go to your email and verify it. This verifiication will likley be in the spam folder, and then log in.
+      You must click the sign-up button twice and ignore the error. Go to the login button and click login. Go to your email and verify it. This verification will likely be in the spam folder, and then log in.
     </div>
 
     <div class="auth-box">
@@ -125,6 +133,7 @@
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
       <button id="submitBtn" onclick="handleAuth()">Login</button>
+      <button id="guestBtn" onclick="loginAsGuest()">Login as Guest</button>
       <p id="toggle" onclick="toggleForm()">Don't have an account? Sign up</p>
       <p id="error"></p>
       <p id="info"></p>
@@ -155,6 +164,22 @@
     const db = firebase.firestore();
 
     let isSignup = false;
+
+    // If already logged in and NOT guest, redirect immediately to projects.html
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        if (!localStorage.getItem('guest')) {
+          window.location.href = 'projects.html';
+        }
+      } else {
+        // If guest was stored but user logged out, clear guest flag
+        if (localStorage.getItem('guest')) {
+          localStorage.removeItem('guest');
+        }
+      }
+      // Show page after this check
+      document.body.style.display = 'flex';
+    });
 
     function toggleForm() {
       isSignup = !isSignup;
@@ -201,6 +226,7 @@
             await auth.signOut();
             return;
           }
+          localStorage.removeItem('guest'); // Clear guest flag on real login
           window.location.href = 'index.html';
         }
       } catch (err) {
@@ -226,11 +252,18 @@
             photoURL: user.photoURL || ""
           });
         }
+        localStorage.removeItem('guest'); // Clear guest flag on real login
         window.location.href = 'index.html';
       } catch (error) {
         document.getElementById('error').textContent = error.message;
       }
     });
+
+    function loginAsGuest() {
+      localStorage.setItem('guest', 'true');
+      // No Firebase auth sign in, just redirect to projects.html
+      window.location.href = 'index.html';
+    }
   </script>
 </body>
 </html>
