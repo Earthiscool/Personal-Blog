@@ -226,6 +226,25 @@
       <p id="modal-body"></p>
     </div>
   </div>
+<style>
+  /* Disable text selection */
+  body {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE10+/Edge */
+    user-select: none;         /* Standard */
+  }
+</style>
+
+<script>
+  // Disable copy, cut, paste events
+  document.addEventListener('copy', (e) => e.preventDefault());
+  document.addEventListener('cut', (e) => e.preventDefault());
+  document.addEventListener('paste', (e) => e.preventDefault());
+
+  // Optional: disable right-click context menu
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+</script>
 
  
   <script type="module">
